@@ -74,6 +74,14 @@
       color: red;
     }
 
+    #login-screen {
+      margin-top: 50px;
+    }
+
+    #login-error {
+      color: red;
+    }
+
     h1, h2, h3 {
       margin: 8px 0;
     }
@@ -82,40 +90,71 @@
 
 <body>
 
-  <h1>🚛 Cash Tow Me – Driver</h1>
+  <!-- LOGIN SCREEN -->
+  <div id="login-screen">
+    <h1>🚛 Cash Tow Me Driver Login</h1>
+    <input id="login-password" type="password" placeholder="Enter password"><br>
+    <button id="login-btn">Login</button>
+    <p id="login-error"></p>
+  </div>
 
-  <h3 id="driver-status">Status: OFF</h3>
+  <!-- DRIVER APP -->
+  <div id="driver-app" style="display:none;">
 
-  <input id="driver-name" placeholder="Driver Name"><br>
-  <input id="driver-city" placeholder="City"><br>
-  <input id="driver-truck" placeholder="Truck Type"><br>
+    <h1>🚛 Cash Tow Me – Driver</h1>
 
-  <button id="add-driver">Add Driver</button>
-  <button id="toggle-status">Toggle Status</button>
+    <h3 id="driver-status">Status: OFF</h3>
 
-  <h2>Driver List</h2>
-  <div id="driver-list"></div>
+    <input id="driver-name" placeholder="Driver Name"><br>
+    <input id="driver-city" placeholder="City"><br>
+    <input id="driver-truck" placeholder="Truck Type"><br>
 
-  <p><strong>Get Cash Tow Calls</strong></p>
+    <button id="add-driver">Add Driver</button>
+    <button id="toggle-status">Toggle Status</button>
 
-  <ul>
-    <li>$5 per day or $30 per month</li>
-    <li>Manual approval required</li>
-    <li>Customer pays you directly</li>
-    <li>No commissions</li>
-  </ul>
+    <h2>Driver List</h2>
+    <div id="driver-list"></div>
 
-  <p>
-    To activate:<br>
-    📧 Email: <strong>cashtowme@gmail.com</strong><br>
-    📞 Phone: <strong>214-309-8955</strong>
-  </p>
+    <p><strong>Get Cash Tow Calls</strong></p>
 
-  <a href="mailto:cashtowme@gmail.com?subject=Driver%20Application%20–%20Cash%20Tow%20Me&body=Hello,%0D%0A%0D%0AI%20would%20like%20to%20apply%20to%20be%20a%20Cash%20Tow%20Me%20driver.%20Please%20let%20me%20know%20the%20next%20steps.%0D%0A%0D%0AThank%20you!">
-    <button>Apply to Drive</button>
-  </a>
+    <ul>
+      <li>$5 per day or $30 per month</li>
+      <li>Manual approval required</li>
+      <li>Customer pays you directly</li>
+      <li>No commissions</li>
+    </ul>
+
+    <p>
+      To activate:<br>
+      📧 Email: <strong>cashtowme@gmail.com</strong><br>
+      📞 Phone: <strong>214-309-8955</strong>
+    </p>
+
+    <a href="mailto:cashtowme@gmail.com?subject=Driver%20Application%20–%20Cash%20Tow%20Me&body=Hello,%0D%0A%0D%0AI%20would%20like%20to%20apply%20to%20be%20a%20Cash%20Tow%20Me%20driver.%20Please%20let%20me%20know%20the%20next%20steps.%0D%0A%0D%0AThank%20you!">
+      <button>Apply to Drive</button>
+    </a>
+
+  </div>
 
   <script>
+    // LOGIN FUNCTIONALITY
+    const PASSWORD = "cash123"; // Change this to your desired password
+    const loginBtn = document.getElementById("login-btn");
+    const passwordInput = document.getElementById("login-password");
+    const loginError = document.getElementById("login-error");
+    const loginScreen = document.getElementById("login-screen");
+    const driverApp = document.getElementById("driver-app");
+
+    loginBtn.addEventListener("click", () => {
+      if (passwordInput.value === PASSWORD) {
+        loginScreen.style.display = "none";
+        driverApp.style.display = "block";
+      } else {
+        loginError.textContent = "Incorrect password!";
+      }
+    });
+
+    // DRIVER APP FUNCTIONALITY
     const statusEl = document.getElementById("driver-status");
     const toggleBtn = document.getElementById("toggle-status");
 
@@ -126,7 +165,7 @@
     const addBtn = document.getElementById("add-driver");
     const driverListEl = document.getElementById("driver-list");
 
-    // Load saved data
+    // Load saved drivers
     let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
 
     // Render driver cards
@@ -135,7 +174,6 @@
       drivers.forEach((driver, index) => {
         const card = document.createElement("div");
         card.className = "driver-card";
-
         const statusClass = driver.status === "ON" ? "status-on" : "status-off";
 
         card.innerHTML = `
@@ -145,25 +183,21 @@
           <button onclick="toggleDriverStatus(${index})">Toggle Status</button>
           <button onclick="removeDriver(${index})">Remove</button>
         `;
-
         driverListEl.appendChild(card);
       });
     }
 
-    // Add new driver
+    // Add driver
     addBtn.addEventListener("click", () => {
       const name = nameInput.value.trim();
       const city = cityInput.value.trim();
       const truck = truckInput.value.trim();
-
       if (!name || !city || !truck) {
         alert("Please fill in all fields");
         return;
       }
-
       drivers.push({ name, city, truck, status: "OFF" });
       localStorage.setItem("drivers", JSON.stringify(drivers));
-
       nameInput.value = "";
       cityInput.value = "";
       truckInput.value = "";
@@ -180,7 +214,7 @@
       localStorage.setItem("driverStatus", statusEl.textContent);
     });
 
-    // Toggle individual driver status
+    // Toggle individual driver
     function toggleDriverStatus(index) {
       drivers[index].status = drivers[index].status === "OFF" ? "ON" : "OFF";
       localStorage.setItem("drivers", JSON.stringify(drivers));
