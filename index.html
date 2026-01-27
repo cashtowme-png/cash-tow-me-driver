@@ -92,16 +92,88 @@
       localStorage.setItem("driverTruck", truckInput.value);
     });
 
-    // Toggle status
-    toggleBtn.addEventListener("click", () => {
-      if (statusEl.textContent.includes("OFF")) {
-        statusEl.textContent = "Status: ON";
-      } else {
-        statusEl.textContent = "Status: OFF";
-      }
-      localStorage.setItem("driverStatus", statusEl.textContent);
-    });
-  </script>
+  <script>
+const statusEl = document.getElementById("driver-status");
+const toggleBtn = document.getElementById("toggle-status");
 
-</body>
-</html>
+const nameInput = document.getElementById("driver-name");
+const cityInput = document.getElementById("driver-city");
+const truckInput = document.getElementById("driver-truck");
+
+const addBtn = document.getElementById("add-driver");
+const driverListEl = document.getElementById("driver-list");
+
+// Load saved data
+let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
+
+function renderDrivers() {
+  driverListEl.innerHTML = "";
+  drivers.forEach((driver, index) => {
+    const div = document.createElement("div");
+    div.style.border = "1px solid #ccc";
+    div.style.padding = "10px";
+    div.style.margin = "5px 0";
+    div.innerHTML = `
+      <strong>${driver.name}</strong> – ${driver.truck} <br>
+      📍 ${driver.city} <br>
+      Status: ${driver.status} <br>
+      <button onclick="toggleDriverStatus(${index})">Toggle Status</button>
+      <button onclick="removeDriver(${index})">Remove</button>
+    `;
+    driverListEl.appendChild(div);
+  });
+}
+
+// Add new driver
+addBtn.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const city = cityInput.value.trim();
+  const truck = truckInput.value.trim();
+
+  if (!name || !city || !truck) {
+    alert("Please fill in all fields");
+    return;
+  }
+
+  drivers.push({
+    name,
+    city,
+    truck,
+    status: "OFF"
+  });
+
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  nameInput.value = "";
+  cityInput.value = "";
+  truckInput.value = "";
+  renderDrivers();
+});
+
+// Toggle global status
+toggleBtn.addEventListener("click", () => {
+  if (statusEl.textContent.includes("OFF")) {
+    statusEl.textContent = "Status: ON";
+  } else {
+    statusEl.textContent = "Status: OFF";
+  }
+  localStorage.setItem("driverStatus", statusEl.textContent);
+});
+
+// Toggle driver status in list
+function toggleDriverStatus(index) {
+  drivers[index].status = drivers[index].status === "OFF" ? "ON" : "OFF";
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
+
+// Remove driver
+function removeDriver(index) {
+  drivers.splice(index, 1);
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
+
+// Initial render
+renderDrivers();
+</script>
+
