@@ -40,6 +40,11 @@
   <h1>🚛 Cash Tow Me – Driver</h1>
 
   <h3 id="driver-status">Status: OFF</h3>
+<input id="driver-name" placeholder="Driver Name" style="width:90%;padding:10px;margin:8px"><br>
+
+<input id="driver-city" placeholder="City" style="width:90%;padding:10px;margin:8px"><br>
+
+<input id="driver-truck" placeholder="Truck Type (Flatbed, Wheel Lift, etc.)" style="width:90%;padding:10px;margin:8px"><br>
 
   <button id="toggle-status">Toggle Status</button>
 
@@ -63,8 +68,41 @@
   </a>
 
   <script>
-    const statusEl = document.getElementById("driver-status");
-    const toggleBtn = document.getElementById("toggle-status");
+   <script>
+  const statusEl = document.getElementById("driver-status");
+  const toggleBtn = document.getElementById("toggle-status");
+
+  const nameInput = document.getElementById("driver-name");
+  const cityInput = document.getElementById("driver-city");
+  const truckInput = document.getElementById("driver-truck");
+
+  nameInput.value = localStorage.getItem("driverName") || "";
+  cityInput.value = localStorage.getItem("driverCity") || "";
+  truckInput.value = localStorage.getItem("driverTruck") || "";
+  statusEl.textContent = localStorage.getItem("driverStatus") || "Status: OFF";
+
+  nameInput.addEventListener("input", () => {
+    localStorage.setItem("driverName", nameInput.value);
+  });
+
+  cityInput.addEventListener("input", () => {
+    localStorage.setItem("driverCity", cityInput.value);
+  });
+
+  truckInput.addEventListener("input", () => {
+    localStorage.setItem("driverTruck", truckInput.value);
+  });
+
+  toggleBtn.addEventListener("click", () => {
+    if (statusEl.textContent.includes("OFF")) {
+      statusEl.textContent = "Status: ON";
+    } else {
+      statusEl.textContent = "Status: OFF";
+    }
+    localStorage.setItem("driverStatus", statusEl.textContent);
+  });
+</script>
+
 
     toggleBtn.addEventListener("click", () => {
       if (statusEl.textContent.includes("OFF")) {
