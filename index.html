@@ -24,9 +24,9 @@
     .driver-status { font-weight:bold; margin-top:5px; }
     .status-on { color:green; }
     .status-off { color:red; }
-    #login-screen { margin-top:50px; }
-    #login-error { color:red; }
-    #cta-section { margin:30px 0; padding:15px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; }
+    #login-screen { margin-top:50px; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+    #login-error { color:red; margin-top:8px; }
+    #cta-section { margin:20px 0; padding:15px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; }
     #cta-section h2 { color:#856404; margin:5px 0; }
     #cta-section button { background-color:#ffc107; color:#856404; }
     #cta-section button:hover { background-color:#e0a800; }
@@ -35,61 +35,31 @@
 </head>
 
 <body>
-<!--
-  🚛 Cash Tow Me Driver App
-  © 2026 Mikey Towing. All rights reserved.
--->
 
 <!-- LOGIN SCREEN -->
 <div id="login-screen">
   <h1>🚛 Cash Tow Me Driver Login</h1>
 
-  
-
-<div id="cta-section">
-  <h2>🚛 Start Earning Cash Today!</h2>
-  <p style="font-size:16px; max-width:320px; margin:auto;">
-    Pay just <strong>$5/day</strong> or <strong>$30/month</strong> and get <strong>exclusive Cash Tow calls</strong> delivered straight to your phone!
-  </p><
-  /div>
-
-  <ul style="text-align:left; max-width:320px; margin:auto; font-size:14px; margin-top:10px;">
-    <li>Pick calls near you — work on your schedule</li>
-    <li>Get paid directly by the customer — no commissions</li>
-    <li>Toggle availability ON/OFF with a click</li>
-    <li>Limited spots — claim your access now!</li>
-  </ul>
-
-  <button id="pay-btn" style="font-size:18px; margin-top:15px; background-color:#28a745; color:white;">
-    Pay & Get Access
-  </button>
-
-  <p id="access-code-display" style="margin-top:12px; font-weight:bold; font-size:16px;"></p>
-
-  <p style="font-size:12px; color:#555; margin-top:8px;">
-    By paying, you agree to our <a href="terms.html" target="_blank">Terms of Service</a>.
-  </p>
-</div>
-
-
-  <ul style="text-align:left; max-width:320px; margin:auto; font-size:14px; margin-top:10px;">
-    <li>Pick calls near you — work on your schedule</li>
-    <li>Get paid directly by the customer — no commissions</li>
-    <li>Toggle availability ON/OFF with a click</li>
-    <li>Limited spots — claim your access now!</li>
-  </ul>
-
-  <button id="pay-btn" style="font-size:18px; margin-top:15px; background-color:#28a745; color:white;">
-    Pay & Get Access
-  </button>
-
-  <p id="access-code-display" style="margin-top:12px; font-weight:bold; font-size:16px;"></p>
-
-  <p style="font-size:12px; color:#555; margin-top:8px;">
-    By paying, you agree to our <a href="terms.html" target="_blank">Terms of Service</a>.
-  </p>
-</div>
-
+  <div id="cta-section">
+    <h2>🚛 Start Earning Cash Today!</h2>
+    <p style="font-size:16px; max-width:320px; margin:auto;">
+      Pay just <strong>$5/day</strong> or <strong>$30/month</strong> and get <strong>exclusive Cash Tow calls</strong> delivered straight to your phone!
+    </p>
+    <ul style="text-align:left; max-width:320px; margin:auto; font-size:14px; margin-top:10px;">
+      <li>Pick calls near you — work on your schedule</li>
+      <li>Get paid directly by the customer — no commissions</li>
+      <li>Toggle availability ON/OFF with a click</li>
+      <li>Limited spots — claim your access now!</li>
+    </ul>
+    <button id="pay-btn" style="font-size:18px; margin-top:15px;">Pay & Get Access</button>
+    <p id="access-code-display" style="margin-top:12px; font-weight:bold; font-size:16px;"></p>
+    <p id="earn-msg" style="margin-top:8px; font-weight:bold; color:#155724; font-size:15px;">
+      One call could cover your daily $5 fee — start earning instantly!
+    </p>
+    <p style="font-size:12px; color:#555; margin-top:8px;">
+      By paying, you agree to our <a href="terms.html" target="_blank">Terms of Service</a>.
+    </p>
+  </div>
 
   <input id="login-code" type="text" placeholder="Enter your access code"><br>
   <input type="checkbox" id="agree-tos"> I agree to the <a href="terms.html" target="_blank">Terms of Service</a><br>
@@ -132,13 +102,13 @@
 </div>
 
 <script>
-// Disable right-click and DevTools shortcuts
+// Disable right-click and DevTools
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', e => {
   if(e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) e.preventDefault();
 });
 
-// Login & access code system
+// LOGIN SYSTEM
 const loginBtn = document.getElementById("login-btn");
 const loginInput = document.getElementById("login-code");
 const loginError = document.getElementById("login-error");
@@ -151,30 +121,83 @@ const codeDisplay = document.getElementById("access-code-display");
 // Generate temporary access code
 payBtn.addEventListener("click", () => {
   const randomNum = Math.floor(Math.random()*9000)+1000;
-  const type = "DAY5"; // change to MONTH30 if needed
+  const type = "DAY5"; 
   const code = `${type}-${randomNum}`;
-
-  let codes = JSON.parse(localStorage.getItem("accessCodes") || "[]");
+  let codes = JSON.parse(localStorage.getItem("accessCodes")||"[]");
   codes.push(code);
   localStorage.setItem("accessCodes", JSON.stringify(codes));
-
   codeDisplay.textContent = `Your access code: ${code}`;
 });
 
+// Login verification
 loginBtn.addEventListener("click", () => {
   const code = loginInput.value.trim();
-  let accessCodes = JSON.parse(localStorage.getItem("accessCodes") || "[]");
-  if(!agreeTos.checked) {
-    loginError.textContent = "You must agree to the Terms of Service.";
-    return;
-  }
-  if(accessCodes.includes(code)) {
-    loginScreen.style.display = "none";
-    driverApp.style.display = "block";
+  let accessCodes = JSON.parse(localStorage.getItem("accessCodes")||"[]");
+  if(!agreeTos.checked){ loginError.textContent="You must agree to the Terms of Service."; return; }
+  if(accessCodes.includes(code)){
+    loginScreen.style.display="none";
+    driverApp.style.display="block";
   } else {
-    loginError.textContent = "Invalid access code!";
+    loginError.textContent="Invalid access code!";
   }
 });
 
-// DRIVER APP FUNCTIONALITY (obfuscated/minified style)
-const statusEl=document.getElementById("driver-status"),toggleBtn=document.getElementById("toggle-status"),nameInput=document.getElementById("driver-name"),cityInput=document.getElementById("driver-city"),truckInput=document.getElementById("driver-truck"),addBtn=document.getElementById("add-driver"),driverListEl=document.getElementById("driver-list");let drivers=JSON.parse(localStorage.getItem("drivers")||"[]");function renderDrivers(){driverListEl.innerHTML="",drivers.forEach((e,t)=>{const n=document.createElement("div");n.className="driver-card";const o=e.status==="ON"?"status-on":"status-off";n.innerHTML=`<strong>${e.name}</strong> – ${e.truck}<br>📍 ${e.city}<br>Status: <span class="driver-status ${o}">${e.status}</span><br><button onclick="toggleDriverStatus(${t})">Toggle Status</button><button onclick="removeDriver(${t})">Remove</button>`,driverListEl.appendChild(n)})}addBtn.addEventListener("click",()=>{const e=nameInput.value.trim(),t=cityInput.value.trim(),n=truckInput.value
+// DRIVER APP FUNCTIONALITY
+const statusEl = document.getElementById("driver-status");
+const toggleBtn = document.getElementById("toggle-status");
+const nameInput = document.getElementById("driver-name");
+const cityInput = document.getElementById("driver-city");
+const truckInput = document.getElementById("driver-truck");
+const addBtn = document.getElementById("add-driver");
+const driverListEl = document.getElementById("driver-list");
+
+let drivers = JSON.parse(localStorage.getItem("drivers")||"[]");
+
+function renderDrivers() {
+  driverListEl.innerHTML="";
+  drivers.forEach((driver,index)=>{
+    const div = document.createElement("div");
+    div.className="driver-card";
+    const statusClass = driver.status==="ON"?"status-on":"status-off";
+    div.innerHTML=`
+      <strong>${driver.name}</strong> – ${driver.truck}<br>
+      📍 ${driver.city}<br>
+      Status: <span class="driver-status ${statusClass}">${driver.status}</span><br>
+      <button onclick="toggleDriverStatus(${index})">Toggle Status</button>
+      <button onclick="removeDriver(${index})">Remove</button>
+    `;
+    driverListEl.appendChild(div);
+  });
+}
+
+addBtn.addEventListener("click",()=>{
+  const name=nameInput.value.trim(), city=cityInput.value.trim(), truck=truckInput.value.trim();
+  if(!name||!city||!truck){ alert("Please fill in all fields"); return; }
+  drivers.push({name, city, truck, status:"OFF"});
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  nameInput.value=""; cityInput.value=""; truckInput.value="";
+  renderDrivers();
+});
+
+toggleBtn.addEventListener("click",()=>{
+  statusEl.textContent = statusEl.textContent.includes("OFF") ? "Status: ON" : "Status: OFF";
+});
+
+function toggleDriverStatus(index){
+  drivers[index].status = drivers[index].status==="OFF"?"ON":"OFF";
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
+
+function removeDriver(index){
+  drivers.splice(index,1);
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
+
+// Initial render
+renderDrivers();
+</script>
+
+</body>
+</html>
