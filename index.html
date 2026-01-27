@@ -16,34 +16,66 @@
 
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       text-align: center;
       padding: 20px;
-    }
-
-    ul {
-      text-align: left;
-      max-width: 320px;
-      margin: auto;
+      background: #f4f4f4;
     }
 
     input {
       width: 90%;
       padding: 10px;
       margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
     }
 
     button {
-      padding: 15px;
-      font-size: 18px;
-      margin-top: 15px;
+      padding: 12px 20px;
+      font-size: 16px;
+      margin: 8px 4px 12px 4px;
       cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background-color: #007bff;
+      color: white;
     }
 
-    #driver-list div {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin: 5px 0;
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #driver-list {
+      max-width: 360px;
+      margin: 20px auto;
+      text-align: left;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .driver-card {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .driver-status {
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .status-on {
+      color: green;
+    }
+
+    .status-off {
+      color: red;
+    }
+
+    h1, h2, h3 {
+      margin: 8px 0;
     }
   </style>
 </head>
@@ -56,7 +88,7 @@
 
   <input id="driver-name" placeholder="Driver Name"><br>
   <input id="driver-city" placeholder="City"><br>
-  <input id="driver-truck" placeholder="Truck Type (Flatbed, Wheel Lift, etc.)"><br>
+  <input id="driver-truck" placeholder="Truck Type"><br>
 
   <button id="add-driver">Add Driver</button>
   <button id="toggle-status">Toggle Status</button>
@@ -97,19 +129,24 @@
     // Load saved data
     let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
 
-    // Render driver list
+    // Render driver cards
     function renderDrivers() {
       driverListEl.innerHTML = "";
       drivers.forEach((driver, index) => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <strong>${driver.name}</strong> – ${driver.truck} <br>
-          📍 ${driver.city} <br>
-          Status: ${driver.status} <br>
+        const card = document.createElement("div");
+        card.className = "driver-card";
+
+        const statusClass = driver.status === "ON" ? "status-on" : "status-off";
+
+        card.innerHTML = `
+          <strong>${driver.name}</strong> – ${driver.truck}<br>
+          📍 ${driver.city}<br>
+          Status: <span class="driver-status ${statusClass}">${driver.status}</span><br>
           <button onclick="toggleDriverStatus(${index})">Toggle Status</button>
           <button onclick="removeDriver(${index})">Remove</button>
         `;
-        driverListEl.appendChild(div);
+
+        driverListEl.appendChild(card);
       });
     }
 
@@ -124,21 +161,16 @@
         return;
       }
 
-      drivers.push({
-        name,
-        city,
-        truck,
-        status: "OFF"
-      });
-
+      drivers.push({ name, city, truck, status: "OFF" });
       localStorage.setItem("drivers", JSON.stringify(drivers));
+
       nameInput.value = "";
       cityInput.value = "";
       truckInput.value = "";
       renderDrivers();
     });
 
-    // Toggle global driver status
+    // Toggle global status
     toggleBtn.addEventListener("click", () => {
       if (statusEl.textContent.includes("OFF")) {
         statusEl.textContent = "Status: ON";
