@@ -14,19 +14,32 @@
     }
   </script>
 
-  <!-- Basic styling -->
   <style>
-    body { font-family: Arial; text-align: center; padding: 20px; }
-    ul { text-align: left; max-width: 320px; margin: auto; }
-    button { padding: 15px; font-size: 18px; margin-top: 15px; cursor: pointer; }
+    body {
+      font-family: Arial;
+      text-align: center;
+      padding: 20px;
+    }
+    ul {
+      text-align: left;
+      max-width: 320px;
+      margin: auto;
+    }
+    button {
+      padding: 15px;
+      font-size: 18px;
+      margin-top: 15px;
+      cursor: pointer;
+    }
   </style>
 </head>
+
 <body>
 
   <h1>🚛 Cash Tow Me – Driver</h1>
 
-  <!-- Driver Status Toggle -->
   <h3 id="driver-status">Status: OFF</h3>
+
   <button id="toggle-status">Toggle Status</button>
 
   <p><strong>Get Cash Tow Calls</strong></p>
@@ -44,21 +57,19 @@
     📞 Phone: <strong>214-309-8955</strong>
   </p>
 
-  <!-- Apply to Drive button -->
   <a href="mailto:cashtowme@gmail.com?subject=Driver%20Application%20–%20Cash%20Tow%20Me&body=Hello,%0D%0A%0D%0AI%20would%20like%20to%20apply%20to%20be%20a%20Cash%20Tow%20Me%20driver.%20Please%20let%20me%20know%20the%20next%20steps.%0D%0A%0D%0AThank%20you!">
     <button>Apply to Drive</button>
   </a>
 
-  <!-- JavaScript for Status toggle -->
   <script>
-    const statusEl = document.getElementById('driver-status');
-    const toggleBtn = document.getElementById('toggle-status');
+    const statusEl = document.getElementById("driver-status");
+    const toggleBtn = document.getElementById("toggle-status");
 
-    toggleBtn.addEventListener('click', () => {
-      if(statusEl.textContent.includes('OFF')){
-        statusEl.textContent = 'Status: ON';
+    toggleBtn.addEventListener("click", () => {
+      if (statusEl.textContent.includes("OFF")) {
+        statusEl.textContent = "Status: ON";
       } else {
-        statusEl.textContent = 'Status: OFF';
+        statusEl.textContent = "Status: OFF";
       }
     });
   </script>
