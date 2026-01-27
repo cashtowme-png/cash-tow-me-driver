@@ -1,98 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Cash Tow Me Driver</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- PWA manifest -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Register service worker -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
-    }
-  </script>
-
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      padding: 20px;
-    }
-    ul {
-      text-align: left;
-      max-width: 320px;
-      margin: auto;
-    }
-    button {
-      padding: 15px;
-      font-size: 18px;
-      margin-top: 15px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-
-<body>
-
-  <h1>🚛 Cash Tow Me – Driver</h1>
-
-  <h3 id="driver-status">Status: OFF</h3>
-
-  <input id="driver-name" placeholder="Driver Name" style="width:90%;padding:10px;margin:8px"><br>
-  <input id="driver-city" placeholder="City" style="width:90%;padding:10px;margin:8px"><br>
-  <input id="driver-truck" placeholder="Truck Type (Flatbed, Wheel Lift, etc.)" style="width:90%;padding:10px;margin:8px"><br>
-
-  <button id="toggle-status">Toggle Status</button>
-
-  <p><strong>Get Cash Tow Calls</strong></p>
-
-  <ul>
-    <li>$5 per day or $30 per month</li>
-    <li>Manual approval required</li>
-    <li>Customer pays you directly</li>
-    <li>No commissions</li>
-  </ul>
-
-  <p>
-    To activate:<br>
-    📧 Email: <strong>cashtowme@gmail.com</strong><br>
-    📞 Phone: <strong>214-309-8955</strong>
-  </p>
-
-  <a href="mailto:cashtowme@gmail.com?subject=Driver%20Application%20–%20Cash%20Tow%20Me&body=Hello,%0D%0A%0D%0AI%20would%20like%20to%20apply%20to%20be%20a%20Cash%20Tow%20Me%20driver.%20Please%20let%20me%20know%20the%20next%20steps.%0D%0A%0D%0AThank%20you!">
-    <button>Apply to Drive</button>
-  </a>
-
-  <script>
-    const statusEl = document.getElementById("driver-status");
-    const toggleBtn = document.getElementById("toggle-status");
-
-    const nameInput = document.getElementById("driver-name");
-    const cityInput = document.getElementById("driver-city");
-    const truckInput = document.getElementById("driver-truck");
-
-    // Load saved data
-    nameInput.value = localStorage.getItem("driverName") || "";
-    cityInput.value = localStorage.getItem("driverCity") || "";
-    truckInput.value = localStorage.getItem("driverTruck") || "";
-    statusEl.textContent = localStorage.getItem("driverStatus") || "Status: OFF";
-
-    // Save inputs
-    nameInput.addEventListener("input", () => {
-      localStorage.setItem("driverName", nameInput.value);
-    });
-
-    cityInput.addEventListener("input", () => {
-      localStorage.setItem("driverCity", cityInput.value);
-    });
-
-    truckInput.addEventListener("input", () => {
-      localStorage.setItem("driverTruck", truckInput.value);
-    });
-
-  <script>
+<script>
 const statusEl = document.getElementById("driver-status");
 const toggleBtn = document.getElementById("toggle-status");
 
@@ -106,6 +12,7 @@ const driverListEl = document.getElementById("driver-list");
 // Load saved data
 let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
 
+// Render driver list
 function renderDrivers() {
   driverListEl.innerHTML = "";
   drivers.forEach((driver, index) => {
@@ -159,7 +66,7 @@ toggleBtn.addEventListener("click", () => {
   localStorage.setItem("driverStatus", statusEl.textContent);
 });
 
-// Toggle driver status in list
+// Toggle individual driver status
 function toggleDriverStatus(index) {
   drivers[index].status = drivers[index].status === "OFF" ? "ON" : "OFF";
   localStorage.setItem("drivers", JSON.stringify(drivers));
@@ -176,4 +83,3 @@ function removeDriver(index) {
 // Initial render
 renderDrivers();
 </script>
-
