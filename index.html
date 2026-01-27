@@ -82,6 +82,28 @@
       color: red;
     }
 
+    #cta-section {
+      margin: 30px 0;
+      padding: 15px;
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      border-radius: 8px;
+    }
+
+    #cta-section h2 {
+      color: #856404;
+      margin: 5px 0;
+    }
+
+    #cta-section button {
+      background-color: #ffc107;
+      color: #856404;
+    }
+
+    #cta-section button:hover {
+      background-color: #e0a800;
+    }
+
     h1, h2, h3 {
       margin: 8px 0;
     }
@@ -93,7 +115,17 @@
   <!-- LOGIN SCREEN -->
   <div id="login-screen">
     <h1>🚛 Cash Tow Me Driver Login</h1>
-    <input id="login-password" type="password" placeholder="Enter password"><br>
+
+    <!-- CTA -->
+    <div id="cta-section">
+      <h2>Want to start earning cash today?</h2>
+      <p>Pay your daily or monthly access fee and get exclusive Cash Tow Me calls immediately!</p>
+      <a href="https://your-payment-link.com" target="_blank">
+        <button>Pay & Get Access</button>
+      </a>
+    </div>
+
+    <input id="login-code" type="text" placeholder="Enter your access code"><br>
     <button id="login-btn">Login</button>
     <p id="login-error"></p>
   </div>
@@ -138,19 +170,20 @@
 
   <script>
     // LOGIN FUNCTIONALITY
-    const PASSWORD = "cash123"; // Change this to your desired password
+    const ACCESS_CODES = ["DAY5-001", "MONTH30-001"]; // update codes as you pay
     const loginBtn = document.getElementById("login-btn");
-    const passwordInput = document.getElementById("login-password");
+    const loginInput = document.getElementById("login-code");
     const loginError = document.getElementById("login-error");
     const loginScreen = document.getElementById("login-screen");
     const driverApp = document.getElementById("driver-app");
 
     loginBtn.addEventListener("click", () => {
-      if (passwordInput.value === PASSWORD) {
+      const code = loginInput.value.trim();
+      if (ACCESS_CODES.includes(code)) {
         loginScreen.style.display = "none";
         driverApp.style.display = "block";
       } else {
-        loginError.textContent = "Incorrect password!";
+        loginError.textContent = "Invalid access code!";
       }
     });
 
@@ -168,7 +201,6 @@
     // Load saved drivers
     let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
 
-    // Render driver cards
     function renderDrivers() {
       driverListEl.innerHTML = "";
       drivers.forEach((driver, index) => {
@@ -187,7 +219,6 @@
       });
     }
 
-    // Add driver
     addBtn.addEventListener("click", () => {
       const name = nameInput.value.trim();
       const city = cityInput.value.trim();
@@ -204,7 +235,6 @@
       renderDrivers();
     });
 
-    // Toggle global status
     toggleBtn.addEventListener("click", () => {
       if (statusEl.textContent.includes("OFF")) {
         statusEl.textContent = "Status: ON";
@@ -214,21 +244,18 @@
       localStorage.setItem("driverStatus", statusEl.textContent);
     });
 
-    // Toggle individual driver
     function toggleDriverStatus(index) {
       drivers[index].status = drivers[index].status === "OFF" ? "ON" : "OFF";
       localStorage.setItem("drivers", JSON.stringify(drivers));
       renderDrivers();
     }
 
-    // Remove driver
     function removeDriver(index) {
       drivers.splice(index, 1);
       localStorage.setItem("drivers", JSON.stringify(drivers));
       renderDrivers();
     }
 
-    // Initial render
     renderDrivers();
   </script>
 
