@@ -111,32 +111,86 @@ function login() {
 // DRIVER APP LOGIC
 let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
 
+<script>
+// ---------- SECURITY (basic deterrents) ----------
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("keydown", e => {
+  if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
+    e.preventDefault();
+  }
+});
+
+// ---------- DRIVER DATA ----------
+let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
+let filteredCity = "";
+
+// ---------- ELEMENTS ----------
+const statusEl = document.getElementById("driver-status");
+const toggleBtn = document.getElementById("toggle-status");
+const nameInput = document.getElementById("driver-name");
+const cityInput = document.getElementById("driver-city");
+const truckInput = document.getElementById("driver-truck");
+const addBtn = document.getElementById("add-driver");
+const driverListEl = document.getElementById("driver-list");
+
+// ---------- RENDER DRIVERS ----------
 function renderDrivers() {
-  const box = document.getElementById("drivers");
-  box.innerHTML = "";
-  drivers.forEach((d,i) => {
-    box.innerHTML += `
-      <div class="card">
+  driverListEl.innerHTML = "";
+
+  drivers
+    .filter(d => d.approved === true)
+    .filter(d => !filteredCity || d.city.toLowerCase() === filteredCity)
+    .forEach((d, i) => {
+      const div = document.createElement("div");
+      div.className = "driver-card";
+
+      div.innerHTML = `
         <strong>${d.name}</strong><br>
-        ${d.city} – ${d.truck}<br>
-        Status: <span class="${d.status === 'ON' ? 'on' : 'off'}">${d.status}</span><br>
-        <button onclick="toggleDriver(${i})">Toggle</button>
+        📍 ${d.city}<br>
+        🚛 ${d.truck}<br>
+        Status:
+        <span class="${d.status === "ON" ? "status-on" : "status-off"}">
+          ${d.status}
+        </span><br><br>
+        <button onclick="toggleDriver(${i})">Toggle Status</button>
         <button onclick="removeDriver(${i})">Remove</button>
-      </div>`;
+      `;
+
+      driverListEl.appendChild(div);
+    });
+}
+
+// ---------- ADD DRIVER ----------
+addBtn.addEventListener("click", () => {
+  const name = nameInput.value.trim();
+  const city = cityInput.value.trim();
+  const truck = truckInput.value.trim();
+
+  if (!name || !city || !truck) {
+    alert("Fill out all fields");
+    return;
+  }
+
+  drivers.push({
+    name,
+    city,
+    truck,
+    status: "OFF",
+    approved: false
   });
-}
 
-function addDriver() {
-  const name = document.getElementById("name").value;
-  const city = document.getElementById("city").value;
-  const truck = document.getElementById("truck").value;
-  if (!name || !city || !truck) return alert("Fill all fields");
-
-  drivers.push({ name, city, truck, status:"OFF" });
   localStorage.setItem("drivers", JSON.stringify(drivers));
-  renderDrivers();
-}
+  nameInput.value = cityInput.value = truckInput.value = "";
+  alert("Driver added — pending admin approval");
+});
 
+// ---------- TOGGLE STATUS ----------
+toggleBtn.addEventListener("click", () => {
+  statusEl.textContent =
+    statusEl.textContent.includes("OFF") ? "Status: ON" : "Status: OFF";
+});
+
+// ---------- DRIVER ACTIONS ----------
 function toggleDriver(i) {
   drivers[i].status = drivers[i].status === "ON" ? "OFF" : "ON";
   localStorage.setItem("drivers", JSON.stringify(drivers));
@@ -144,17 +198,24 @@ function toggleDriver(i) {
 }
 
 function removeDriver(i) {
-  drivers.splice(i,1);
+  drivers.splice(i, 1);
   localStorage.setItem("drivers", JSON.stringify(drivers));
   renderDrivers();
 }
 
-function toggleStatus() {
-  const s = document.getElementById("status");
-  s.innerText = s.innerText === "OFF" ? "ON" : "OFF";
-  s.className = s.innerText === "ON" ? "on" : "off";
+// ---------- CITY FILTER ----------
+function filterDrivers() {
+  filteredCity = document.getElementById("filter-city").value.toLowerCase();
+  renderDrivers();
 }
 
+function clearFilter() {
+  filteredCity = "";
+  document.getElementById("filter-city").value = "";
+  renderDrivers();
+}
+
+// ---------- INIT ----------
 renderDrivers();
 </script>
 
