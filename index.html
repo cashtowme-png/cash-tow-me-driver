@@ -4,44 +4,49 @@
   <meta charset="UTF-8">
   <title>Cash Tow Me – Driver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#007bff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cash Tow Me">
 
+  <!-- App Icon -->
+  <link rel="apple-touch-icon" href="icon.png">
+
   <style>
-    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; text-align:center; }
-    input, button { width:90%; padding:12px; margin:8px 0; font-size:16px; }
-    button { background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; }
+    body { font-family: Arial, sans-serif; background:#f0f8ff; padding:20px; text-align:center; }
+    input, button { width:90%; padding:12px; margin:8px 0; font-size:16px; border-radius:5px; border:1px solid #ccc; }
+    button { background:#007bff; color:white; border:none; cursor:pointer; }
     button:hover { background:#0056b3; }
-    .card { background:white; padding:15px; border-radius:8px; margin:10px auto; max-width:360px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .card { background:white; padding:20px; border-radius:10px; margin:10px auto; max-width:360px; box-shadow:0 3px 8px rgba(0,0,0,.2); }
     .on { color:green; font-weight:bold; }
     .off { color:red; font-weight:bold; }
     #driver-app { display:none; }
-    .driver-card { background:#fff; padding:10px; margin:8px 0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.2); text-align:left; }
+    .driver-card { background:#e0f7fa; padding:10px; margin:8px 0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.2); text-align:left; }
+    h1,h2,h3 { color:#007bff; margin:8px 0; }
+    #filter-city, #login-code { margin-bottom:12px; }
+    #cta-section { background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; padding:15px; margin:15px 0; }
+    #cta-section h2 { color:#856404; }
+    #cta-section button { background-color:#ffc107; color:#856404; }
+    #cta-section button:hover { background-color:#e0a800; }
   </style>
 </head>
 
 <body>
 
-<!-- LOGIN / PAYWALL -->
+<!-- ================= LOGIN / PAYWALL ================= -->
 <div id="login-screen" class="card">
   <h1>🚛 Cash Tow Me – Driver</h1>
-  <h3>Start Earning Cash Today</h3>
-  <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> to get exclusive local tow calls. Customer pays YOU directly.</p>
 
-  <ul style="text-align:left;">
-    <li>No commissions</li>
-    <li>Work when you want</li>
-    <li>One call can cover your fee</li>
-  </ul>
-
-  <button onclick="buyAccess('DAY5')">Pay $5 (Daily)</button>
-  <button onclick="buyAccess('MONTH30')">Pay $30 (Monthly)</button>
-
-  <p id="code-display" style="font-weight:bold;"></p>
+  <div id="cta-section">
+    <h2>Start Earning Cash Today!</h2>
+    <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> and get exclusive Cash Tow calls delivered straight to your phone!</p>
+    <button onclick="buyAccess('DAY5')">Pay $5 (Daily)</button>
+    <button onclick="buyAccess('MONTH30')">Pay $30 (Monthly)</button>
+    <p id="code-display" style="margin-top:10px; font-weight:bold;"></p>
+  </div>
 
   <input id="login-code" placeholder="Enter Access Code"><br>
   <label><input type="checkbox" id="agree"> I agree to Terms</label><br>
@@ -49,7 +54,7 @@
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- DRIVER APP -->
+<!-- ================= DRIVER APP ================= -->
 <div id="driver-app" class="card">
   <h2>🚛 Driver Dashboard</h2>
   <p>Status: <span id="status" class="off">OFF</span></p>
@@ -62,7 +67,7 @@
   <button onclick="addDriver()">Add Driver</button>
 
   <h3>Filter Drivers by City</h3>
-  <input id="filter-city" placeholder="Enter City (Dallas, Mesquite, etc)">
+  <input id="filter-city" placeholder="Enter City">
   <button onclick="filterDrivers()">Filter</button>
   <button onclick="clearFilter()">Show All</button>
 
@@ -97,18 +102,13 @@ function login() {
   const agree = document.getElementById("agree").checked;
   const codes = JSON.parse(localStorage.getItem("codes") || "[]");
 
-  if (!agree) {
-    document.getElementById("error").innerText = "You must agree to Terms.";
-    return;
-  }
+  if (!agree) { document.getElementById("error").innerText = "You must agree to Terms."; return; }
 
   if (codes.includes(code)) {
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("driver-app").style.display = "block";
     renderDrivers();
-  } else {
-    document.getElementById("error").innerText = "Invalid access code.";
-  }
+  } else { document.getElementById("error").innerText = "Invalid access code."; }
 }
 
 // ---------------- DRIVER APP LOGIC ----------------
@@ -121,11 +121,10 @@ function renderDrivers() {
   driverListEl.innerHTML = "";
 
   drivers
-    .filter(d => !filteredCity || d.city.toLowerCase() === filteredCity)
+    .filter(d => !filteredCity || d.city.toLowerCase() === filteredCity.toLowerCase())
     .forEach((d,i) => {
       const div = document.createElement("div");
       div.className = "driver-card";
-
       div.innerHTML = `
         <strong>${d.name}</strong><br>
         📍 ${d.city}<br>
@@ -143,16 +142,13 @@ function addDriver() {
   const name = document.getElementById("name").value.trim();
   const city = document.getElementById("city").value.trim();
   const truck = document.getElementById("truck").value.trim();
-
   if (!name || !city || !truck) { alert("Fill out all fields"); return; }
 
   drivers.push({ name, city, truck, status:"OFF" });
   localStorage.setItem("drivers", JSON.stringify(drivers));
-
   document.getElementById("name").value = "";
   document.getElementById("city").value = "";
   document.getElementById("truck").value = "";
-
   renderDrivers();
 }
 
@@ -168,7 +164,6 @@ function toggleDriver(i) {
   localStorage.setItem("drivers", JSON.stringify(drivers));
   renderDrivers();
 }
-
 function removeDriver(i) {
   drivers.splice(i,1);
   localStorage.setItem("drivers", JSON.stringify(drivers));
@@ -177,7 +172,7 @@ function removeDriver(i) {
 
 // CITY FILTER
 function filterDrivers() {
-  filteredCity = document.getElementById("filter-city").value.toLowerCase();
+  filteredCity = document.getElementById("filter-city").value;
   renderDrivers();
 }
 function clearFilter() {
