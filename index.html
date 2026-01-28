@@ -3,37 +3,23 @@
 <head>
   <title>Cash Tow Me Driver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- PWA manifest -->
-  <link rel="manifest" href="manifest.json">
-
-  <!-- Register service worker -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("service-worker.js");
-    }
-  </script>
-
+  <script src="https://js.stripe.com/v3/"></script>
   <style>
     body { font-family: Arial, sans-serif; text-align:center; padding:20px; background:#f4f4f4; }
-    input { width: 90%; padding:10px; margin:8px 0; border:1px solid #ccc; border-radius:5px; }
-    button { padding:12px 20px; font-size:16px; margin:8px 4px 12px 4px; cursor:pointer; border-radius:5px; border:none; background:#007bff; color:white; }
-    button:hover { background:#0056b3; }
+    input, button { width:90%; padding:10px; margin:8px 0; border-radius:5px; border:none; }
+    button { cursor:pointer; }
+    #driver-app, #login-error { display:none; }
     #driver-list { max-width:360px; margin:20px auto; text-align:left; max-height:400px; overflow-y:auto; }
     .driver-card { background:white; border-radius:8px; padding:15px; margin-bottom:12px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
     .driver-status { font-weight:bold; margin-top:5px; }
     .status-on { color:green; }
     .status-off { color:red; }
-    #login-screen { margin-top:50px; background:white; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
-    #login-error { color:red; margin-top:8px; }
-    #cta-section { margin:20px 0; padding:15px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; }
+    #cta-section { margin:30px 0; padding:15px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; }
     #cta-section h2 { color:#856404; margin:5px 0; }
     #cta-section button { background-color:#ffc107; color:#856404; }
     #cta-section button:hover { background-color:#e0a800; }
-    h1,h2,h3 { margin:8px 0; }
   </style>
 </head>
-
 <body>
 
 <!-- LOGIN SCREEN -->
@@ -42,162 +28,6 @@
 
   <div id="cta-section">
     <h2>🚛 Start Earning Cash Today!</h2>
-    <p style="font-size:16px; max-width:320px; margin:auto;">
-      Pay just <strong>$5/day</strong> or <strong>$30/month</strong> and get <strong>exclusive Cash Tow calls</strong> delivered straight to your phone!
-    </p>
-    <ul style="text-align:left; max-width:320px; margin:auto; font-size:14px; margin-top:10px;">
-      <li>Pick calls near you — work on your schedule</li>
-      <li>Get paid directly by the customer — no commissions</li>
-      <li>Toggle availability ON/OFF with a click</li>
-      <li>Limited spots — claim your access now!</li>
-    </ul>
-    <button id="pay-btn" style="font-size:18px; margin-top:15px;">Pay & Get Access</button>
-    <p id="access-code-display" style="margin-top:12px; font-weight:bold; font-size:16px;"></p>
-    <p id="earn-msg" style="margin-top:8px; font-weight:bold; color:#155724; font-size:15px;">
-      One call could cover your daily $5 fee — start earning instantly!
-    </p>
-    <p style="font-size:12px; color:#555; margin-top:8px;">
-      By paying, you agree to our <a href="terms.html" target="_blank">Terms of Service</a>.
-    </p>
-  </div>
-
-  <input id="login-code" type="text" placeholder="Enter your access code"><br>
-  <input type="checkbox" id="agree-tos"> I agree to the <a href="terms.html" target="_blank">Terms of Service</a><br>
-  <button id="login-btn">Login</button>
-  <p id="login-error"></p>
-</div>
-
-<!-- DRIVER APP -->
-<div id="driver-app" style="display:none;">
-  <h1>🚛 Cash Tow Me – Driver</h1>
-  <h3 id="driver-status">Status: OFF</h3>
-
-  <input id="driver-name" placeholder="Driver Name"><br>
-  <input id="driver-city" placeholder="City"><br>
-  <input id="driver-truck" placeholder="Truck Type"><br>
-
-  <button id="add-driver">Add Driver</button>
-  <button id="toggle-status">Toggle Status</button>
-
-  <h2>Driver List</h2>
-  <div id="driver-list"></div>
-
-  <p><strong>Get Cash Tow Calls</strong></p>
-  <ul>
-    <li>$5 per day or $30 per month</li>
-    <li>Manual approval required</li>
-    <li>Customer pays you directly</li>
-    <li>No commissions</li>
-  </ul>
-
-  <p>
-    To activate:<br>
-    📧 Email: <strong>cashtowme@gmail.com</strong><br>
-    📞 Phone: <strong>214-309-8955</strong>
-  </p>
-
-  <a href="mailto:cashtowme@gmail.com?subject=Driver%20Application%20–%20Cash%20Tow%20Me">
-    <button>Apply to Drive</button>
-  </a>
-</div>
-
-<script>
-// Disable right-click and DevTools
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('keydown', e => {
-  if(e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) e.preventDefault();
-});
-
-// LOGIN SYSTEM
-const loginBtn = document.getElementById("login-btn");
-const loginInput = document.getElementById("login-code");
-const loginError = document.getElementById("login-error");
-const loginScreen = document.getElementById("login-screen");
-const driverApp = document.getElementById("driver-app");
-const agreeTos = document.getElementById("agree-tos");
-const payBtn = document.getElementById("pay-btn");
-const codeDisplay = document.getElementById("access-code-display");
-
-// Generate temporary access code
-payBtn.addEventListener("click", () => {
-  const randomNum = Math.floor(Math.random()*9000)+1000;
-  const type = "DAY5"; 
-  const code = `${type}-${randomNum}`;
-  let codes = JSON.parse(localStorage.getItem("accessCodes")||"[]");
-  codes.push(code);
-  localStorage.setItem("accessCodes", JSON.stringify(codes));
-  codeDisplay.textContent = `Your access code: ${code}`;
-});
-
-// Login verification
-loginBtn.addEventListener("click", () => {
-  const code = loginInput.value.trim();
-  let accessCodes = JSON.parse(localStorage.getItem("accessCodes")||"[]");
-  if(!agreeTos.checked){ loginError.textContent="You must agree to the Terms of Service."; return; }
-  if(accessCodes.includes(code)){
-    loginScreen.style.display="none";
-    driverApp.style.display="block";
-  } else {
-    loginError.textContent="Invalid access code!";
-  }
-});
-
-// DRIVER APP FUNCTIONALITY
-const statusEl = document.getElementById("driver-status");
-const toggleBtn = document.getElementById("toggle-status");
-const nameInput = document.getElementById("driver-name");
-const cityInput = document.getElementById("driver-city");
-const truckInput = document.getElementById("driver-truck");
-const addBtn = document.getElementById("add-driver");
-const driverListEl = document.getElementById("driver-list");
-
-let drivers = JSON.parse(localStorage.getItem("drivers")||"[]");
-
-function renderDrivers() {
-  driverListEl.innerHTML="";
-  drivers.forEach((driver,index)=>{
-    const div = document.createElement("div");
-    div.className="driver-card";
-    const statusClass = driver.status==="ON"?"status-on":"status-off";
-    div.innerHTML=`
-      <strong>${driver.name}</strong> – ${driver.truck}<br>
-      📍 ${driver.city}<br>
-      Status: <span class="driver-status ${statusClass}">${driver.status}</span><br>
-      <button onclick="toggleDriverStatus(${index})">Toggle Status</button>
-      <button onclick="removeDriver(${index})">Remove</button>
-    `;
-    driverListEl.appendChild(div);
-  });
-}
-
-addBtn.addEventListener("click",()=>{
-  const name=nameInput.value.trim(), city=cityInput.value.trim(), truck=truckInput.value.trim();
-  if(!name||!city||!truck){ alert("Please fill in all fields"); return; }
-  drivers.push({name, city, truck, status:"OFF"});
-  localStorage.setItem("drivers", JSON.stringify(drivers));
-  nameInput.value=""; cityInput.value=""; truckInput.value="";
-  renderDrivers();
-});
-
-toggleBtn.addEventListener("click",()=>{
-  statusEl.textContent = statusEl.textContent.includes("OFF") ? "Status: ON" : "Status: OFF";
-});
-
-function toggleDriverStatus(index){
-  drivers[index].status = drivers[index].status==="OFF"?"ON":"OFF";
-  localStorage.setItem("drivers", JSON.stringify(drivers));
-  renderDrivers();
-}
-
-function removeDriver(index){
-  drivers.splice(index,1);
-  localStorage.setItem("drivers", JSON.stringify(drivers));
-  renderDrivers();
-}
-
-// Initial render
-renderDrivers();
-</script>
-
-</body>
-</html>
+    <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> and get exclusive Cash Tow calls delivered straight to your phone!</p>
+    <button id="pay-day">Pay $5/day</button>
+    <button id
