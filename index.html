@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Cash Tow Me – Driver</title>
- <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#007bff">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-
-  <!-- App icon -->
-  <link rel="icon" href="app-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <!-- Manifest -->
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#007bff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="icon" href="./app-icon.png">
 
   <style>
     body { font-family: Arial, sans-serif; background:#f0f8ff; padding:20px; text-align:center; }
@@ -24,7 +25,7 @@
     .driver-card { border:1px solid #ccc; padding:10px; border-radius:8px; margin:5px 0; background:#fefefe; }
     #cta-section { background:#fff3cd; border:1px solid #ffeeba; padding:10px; border-radius:8px; margin:10px 0; }
     #cta-section h2 { color:#856404; margin:5px 0; }
-    #pay-btn { background-color:#28a745; color:white; font-weight:bold; }
+    #pay-btn { background-color:#28a745; color:white; font-weight:bold; margin-bottom:5px; }
     #pay-btn:hover { background-color:#218838; }
     .approve-btn { background-color:#007bff; color:white; margin-right:5px; }
     .approve-btn:hover { background-color:#0056b3; }
@@ -35,7 +36,7 @@
 
 <body>
 
-<!-- ================= LOGIN / PAY WALL ================= -->
+<!-- LOGIN / PAYWALL -->
 <div id="login-screen" class="card">
   <h1>🚛 Cash Tow Me – Driver</h1>
   <h3>Start Earning Cash Today</h3>
@@ -44,8 +45,8 @@
     <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> and get local calls sent directly to your phone. Customer pays YOU directly!</p>
   </div>
 
-  <button id="pay-btn" onclick="buyAccess('DAY5')">Pay $5 (Daily)</button>
-  <button id="pay-btn" onclick="buyAccess('MONTH30')">Pay $30 (Monthly)</button>
+  <button id="pay-day" onclick="buyAccess('DAY5')">Pay $5 (Daily)</button>
+  <button id="pay-month" onclick="buyAccess('MONTH30')">Pay $30 (Monthly)</button>
 
   <p id="code-display" style="font-weight:bold;"></p>
 
@@ -55,7 +56,7 @@
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- ================= DRIVER APP ================= -->
+<!-- DRIVER APP -->
 <div id="driver-app" class="card">
   <h2>🚛 Driver Dashboard</h2>
   <p>Status: <span id="status" class="off">OFF</span></p>
@@ -83,7 +84,7 @@
   <button onclick="openAdmin()" style="background-color:#343a40; color:white;">Admin Dashboard</button>
 </div>
 
-<!-- ================= ADMIN DASHBOARD ================= -->
+<!-- ADMIN DASHBOARD -->
 <div id="admin-dashboard" class="card">
   <h2>👮 Admin Approval Dashboard</h2>
   <h3>Pending Drivers</h3>
@@ -92,11 +93,9 @@
 </div>
 
 <script>
-// ----------------- PROTECTION -----------------
+// ----------------- BASIC PROTECTION -----------------
 document.addEventListener("contextmenu", e => e.preventDefault());
-document.addEventListener("keydown", e => {
-  if(e.key==="F12"||(e.ctrlKey&&e.shiftKey&&e.key==="I")) e.preventDefault();
-});
+document.addEventListener("keydown", e => { if(e.key==="F12"||(e.ctrlKey&&e.shiftKey&&e.key==="I")) e.preventDefault(); });
 
 // ----------------- PAY / ACCESS -----------------
 function buyAccess(type){
@@ -112,7 +111,7 @@ function login(){
   const code=document.getElementById("login-code").value.trim();
   const agree=document.getElementById("agree").checked;
   const codes=JSON.parse(localStorage.getItem("codes")||"[]");
-  if(!agree){document.getElementById("error").innerText="You must agree to Terms.";return;}
+  if(!agree){document.getElementById("error").innerText="You must agree to Terms."; return;}
   if(codes.includes(code)){
     document.getElementById("login-screen").style.display="none";
     document.getElementById("driver-app").style.display="block";
@@ -124,7 +123,6 @@ function login(){
 let drivers=JSON.parse(localStorage.getItem("drivers")||"[]");
 let filteredCity="";
 
-// Elements
 const statusEl=document.getElementById("status");
 const nameInput=document.getElementById("name");
 const cityInput=document.getElementById("city");
@@ -132,10 +130,7 @@ const truckInput=document.getElementById("truck");
 const driverListEl=document.getElementById("drivers");
 
 // Toggle status
-function toggleStatus(){
-  statusEl.textContent=statusEl.textContent.includes("OFF")?"ON":"OFF";
-  statusEl.className=statusEl.textContent==="ON"?"on":"off";
-}
+function toggleStatus(){ statusEl.textContent=statusEl.textContent.includes("OFF")?"ON":"OFF"; statusEl.className=statusEl.textContent==="ON"?"on":"off"; }
 
 // Add driver
 function addDriver(){
@@ -157,40 +152,30 @@ function renderDrivers(){
     const div=document.createElement("div");
     div.className="driver-card";
     div.innerHTML=`<strong>${d.name}</strong><br>📍 ${d.city}<br>🚛 ${d.truck}<br>Status: <span class="${d.status==="ON"?"on":"off"}">${d.status}</span><br>
-    <button onclick="toggleDriver(${i})">Toggle Status</button>
-    <button onclick="removeDriver(${i})">Remove</button>`;
+      <button onclick="toggleDriver(${i})">Toggle Status</button>
+      <button onclick="removeDriver(${i})">Remove</button>`;
     driverListEl.appendChild(div);
   });
 }
 
 // Toggle driver
-function toggleDriver(i){
-  drivers[i].status=drivers[i].status==="ON"?"OFF":"ON";
-  localStorage.setItem("drivers",JSON.stringify(drivers));
-  renderDrivers();
-}
+function toggleDriver(i){ drivers[i].status=drivers[i].status==="ON"?"OFF":"ON"; localStorage.setItem("drivers",JSON.stringify(drivers)); renderDrivers(); }
 
 // Remove driver
-function removeDriver(i){
-  drivers.splice(i,1);
-  localStorage.setItem("drivers",JSON.stringify(drivers));
-  renderDrivers();
-}
+function removeDriver(i){ drivers.splice(i,1); localStorage.setItem("drivers",JSON.stringify(drivers)); renderDrivers(); }
 
-// Filter / clear
-function filterDrivers(){filteredCity=document.getElementById("filter-city").value;renderDrivers();}
-function clearFilter(){filteredCity="";document.getElementById("filter-city").value="";renderDrivers();}
+// Filter
+function filterDrivers(){ filteredCity=document.getElementById("filter-city").value; renderDrivers(); }
+function clearFilter(){ filteredCity=""; document.getElementById("filter-city").value=""; renderDrivers(); }
 
 // ----------------- ADMIN DASHBOARD -----------------
-const adminPassword="admin123"; // Change this password
+const adminPassword="admin123"; // Change
 function openAdmin(){
   const pwd=prompt("Enter admin password:");
-  if(pwd===adminPassword){
-    document.getElementById("admin-dashboard").style.display="block";
-    renderPendingDrivers();
-  }else{alert("Incorrect password");}
+  if(pwd===adminPassword){ document.getElementById("admin-dashboard").style.display="block"; renderPendingDrivers(); }
+  else{ alert("Incorrect password"); }
 }
-function closeAdmin(){document.getElementById("admin-dashboard").style.display="none";}
+function closeAdmin(){ document.getElementById("admin-dashboard").style.display="none"; }
 
 function renderPendingDrivers(){
   const pendingEl=document.getElementById("pending-drivers");
@@ -205,8 +190,8 @@ function renderPendingDrivers(){
   });
 }
 
-function approveDriver(i){drivers[i].approved=true;localStorage.setItem("drivers",JSON.stringify(drivers));renderPendingDrivers();renderDrivers();}
-function rejectDriver(i){drivers.splice(i,1);localStorage.setItem("drivers",JSON.stringify(drivers));renderPendingDrivers();}
+function approveDriver(i){ drivers[i].approved=true; localStorage.setItem("drivers",JSON.stringify(drivers)); renderPendingDrivers(); renderDrivers(); }
+function rejectDriver(i){ drivers.splice(i,1); localStorage.setItem("drivers",JSON.stringify(drivers)); renderPendingDrivers(); }
 
 </script>
 </body>
