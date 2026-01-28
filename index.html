@@ -1,8 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Cash Tow Me – Driver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cash Tow Me">
 
   <style>
     body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; text-align:center; }
@@ -13,21 +20,17 @@
     .on { color:green; font-weight:bold; }
     .off { color:red; font-weight:bold; }
     #driver-app { display:none; }
+    .driver-card { background:#fff; padding:10px; margin:8px 0; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,.2); text-align:left; }
   </style>
 </head>
 
 <body>
 
-<!-- ================= LOGIN / PAY WALL ================= -->
+<!-- LOGIN / PAYWALL -->
 <div id="login-screen" class="card">
   <h1>🚛 Cash Tow Me – Driver</h1>
-
   <h3>Start Earning Cash Today</h3>
-  <p>
-    Pay <strong>$5/day</strong> or <strong>$30/month</strong><br>
-    Get exclusive local cash tow calls.<br>
-    Customer pays YOU directly.
-  </p>
+  <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> to get exclusive local tow calls. Customer pays YOU directly.</p>
 
   <ul style="text-align:left;">
     <li>No commissions</li>
@@ -40,15 +43,13 @@
 
   <p id="code-display" style="font-weight:bold;"></p>
 
-  <input id="login-code" placeholder="Enter Access Code">
-  <label>
-    <input type="checkbox" id="agree"> I agree to Terms
-  </label>
+  <input id="login-code" placeholder="Enter Access Code"><br>
+  <label><input type="checkbox" id="agree"> I agree to Terms</label><br>
   <button onclick="login()">Login</button>
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- ================= DRIVER APP ================= -->
+<!-- DRIVER APP -->
 <div id="driver-app" class="card">
   <h2>🚛 Driver Dashboard</h2>
   <p>Status: <span id="status" class="off">OFF</span></p>
@@ -59,10 +60,11 @@
   <input id="city" placeholder="City">
   <input id="truck" placeholder="Truck Type">
   <button onclick="addDriver()">Add Driver</button>
-<h3>Filter Drivers by City</h3>
-<input id="filter-city" placeholder="Enter City (Dallas, Mesquite, etc)">
-<button onclick="filterDrivers()">Filter</button>
-<button onclick="clearFilter()">Show All</button>
+
+  <h3>Filter Drivers by City</h3>
+  <input id="filter-city" placeholder="Enter City (Dallas, Mesquite, etc)">
+  <button onclick="filterDrivers()">Filter</button>
+  <button onclick="clearFilter()">Show All</button>
 
   <h3>Active Drivers</h3>
   <div id="drivers"></div>
@@ -74,13 +76,13 @@
 </div>
 
 <script>
-// BASIC PROTECTION
+// ---------------- BASIC PROTECTION ----------------
 document.addEventListener("contextmenu", e => e.preventDefault());
 document.addEventListener("keydown", e => {
   if (e.key === "F12" || (e.ctrlKey && e.shiftKey)) e.preventDefault();
 });
 
-// PAYMENT SIMULATION (TEST MODE)
+// ---------------- PAYMENT SIMULATION ----------------
 function buyAccess(type) {
   const code = type + "-" + Math.floor(1000 + Math.random()*9000);
   let codes = JSON.parse(localStorage.getItem("codes") || "[]");
@@ -89,7 +91,7 @@ function buyAccess(type) {
   document.getElementById("code-display").innerText = "Your Access Code: " + code;
 }
 
-// LOGIN
+// ---------------- LOGIN ----------------
 function login() {
   const code = document.getElementById("login-code").value.trim();
   const agree = document.getElementById("agree").checked;
@@ -103,44 +105,24 @@ function login() {
   if (codes.includes(code)) {
     document.getElementById("login-screen").style.display = "none";
     document.getElementById("driver-app").style.display = "block";
+    renderDrivers();
   } else {
     document.getElementById("error").innerText = "Invalid access code.";
   }
 }
 
-// DRIVER APP LOGIC
-let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
-
-<script>
-// ---------- SECURITY (basic deterrents) ----------
-document.addEventListener("contextmenu", e => e.preventDefault());
-document.addEventListener("keydown", e => {
-  if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) {
-    e.preventDefault();
-  }
-});
-
-// ---------- DRIVER DATA ----------
+// ---------------- DRIVER APP LOGIC ----------------
 let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
 let filteredCity = "";
 
-// ---------- ELEMENTS ----------
-const statusEl = document.getElementById("driver-status");
-const toggleBtn = document.getElementById("toggle-status");
-const nameInput = document.getElementById("driver-name");
-const cityInput = document.getElementById("driver-city");
-const truckInput = document.getElementById("driver-truck");
-const addBtn = document.getElementById("add-driver");
-const driverListEl = document.getElementById("driver-list");
-
-// ---------- RENDER DRIVERS ----------
+// RENDER DRIVERS
 function renderDrivers() {
+  const driverListEl = document.getElementById("drivers");
   driverListEl.innerHTML = "";
 
   drivers
-    .filter(d => d.approved === true)
     .filter(d => !filteredCity || d.city.toLowerCase() === filteredCity)
-    .forEach((d, i) => {
+    .forEach((d,i) => {
       const div = document.createElement("div");
       div.className = "driver-card";
 
@@ -148,76 +130,64 @@ function renderDrivers() {
         <strong>${d.name}</strong><br>
         📍 ${d.city}<br>
         🚛 ${d.truck}<br>
-        Status:
-        <span class="${d.status === "ON" ? "status-on" : "status-off"}">
-          ${d.status}
-        </span><br><br>
+        Status: <span class="${d.status === "ON" ? "on" : "off"}">${d.status}</span><br>
         <button onclick="toggleDriver(${i})">Toggle Status</button>
         <button onclick="removeDriver(${i})">Remove</button>
       `;
-
       driverListEl.appendChild(div);
     });
 }
 
-// ---------- ADD DRIVER ----------
-addBtn.addEventListener("click", () => {
-  const name = nameInput.value.trim();
-  const city = cityInput.value.trim();
-  const truck = truckInput.value.trim();
+// ADD DRIVER
+function addDriver() {
+  const name = document.getElementById("name").value.trim();
+  const city = document.getElementById("city").value.trim();
+  const truck = document.getElementById("truck").value.trim();
 
-  if (!name || !city || !truck) {
-    alert("Fill out all fields");
-    return;
-  }
+  if (!name || !city || !truck) { alert("Fill out all fields"); return; }
 
-  drivers.push({
-    name,
-    city,
-    truck,
-    status: "OFF",
-    approved: false
-  });
-
+  drivers.push({ name, city, truck, status:"OFF" });
   localStorage.setItem("drivers", JSON.stringify(drivers));
-  nameInput.value = cityInput.value = truckInput.value = "";
-  alert("Driver added — pending admin approval");
-});
 
-// ---------- TOGGLE STATUS ----------
-toggleBtn.addEventListener("click", () => {
-  statusEl.textContent =
-    statusEl.textContent.includes("OFF") ? "Status: ON" : "Status: OFF";
-});
+  document.getElementById("name").value = "";
+  document.getElementById("city").value = "";
+  document.getElementById("truck").value = "";
 
-// ---------- DRIVER ACTIONS ----------
+  renderDrivers();
+}
+
+// TOGGLE GLOBAL STATUS
+function toggleStatus() {
+  const statusEl = document.getElementById("status");
+  statusEl.textContent = statusEl.textContent === "OFF" ? "ON" : "OFF";
+}
+
+// DRIVER ACTIONS
 function toggleDriver(i) {
-  drivers[i].status = drivers[i].status === "ON" ? "OFF" : "ON";
+  drivers[i].status = drivers[i].status === "OFF" ? "ON" : "OFF";
   localStorage.setItem("drivers", JSON.stringify(drivers));
   renderDrivers();
 }
 
 function removeDriver(i) {
-  drivers.splice(i, 1);
+  drivers.splice(i,1);
   localStorage.setItem("drivers", JSON.stringify(drivers));
   renderDrivers();
 }
 
-// ---------- CITY FILTER ----------
+// CITY FILTER
 function filterDrivers() {
   filteredCity = document.getElementById("filter-city").value.toLowerCase();
   renderDrivers();
 }
-
 function clearFilter() {
   filteredCity = "";
   document.getElementById("filter-city").value = "";
   renderDrivers();
 }
 
-// ---------- INIT ----------
+// INITIAL RENDER
 renderDrivers();
 </script>
-
 </body>
 </html>
