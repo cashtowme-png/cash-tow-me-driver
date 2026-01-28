@@ -1,33 +1,158 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Cash Tow Me Driver</title>
+  <title>Cash Tow Me – Driver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="https://js.stripe.com/v3/"></script>
+
   <style>
-    body { font-family: Arial, sans-serif; text-align:center; padding:20px; background:#f4f4f4; }
-    input, button { width:90%; padding:10px; margin:8px 0; border-radius:5px; border:none; }
-    button { cursor:pointer; }
-    #driver-app, #login-error { display:none; }
-    #driver-list { max-width:360px; margin:20px auto; text-align:left; max-height:400px; overflow-y:auto; }
-    .driver-card { background:white; border-radius:8px; padding:15px; margin-bottom:12px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
-    .driver-status { font-weight:bold; margin-top:5px; }
-    .status-on { color:green; }
-    .status-off { color:red; }
-    #cta-section { margin:30px 0; padding:15px; background:#fff3cd; border:1px solid #ffeeba; border-radius:8px; }
-    #cta-section h2 { color:#856404; margin:5px 0; }
-    #cta-section button { background-color:#ffc107; color:#856404; }
-    #cta-section button:hover { background-color:#e0a800; }
+    body { font-family: Arial, sans-serif; background:#f4f4f4; padding:20px; text-align:center; }
+    input, button { width:90%; padding:12px; margin:8px 0; font-size:16px; }
+    button { background:#007bff; color:white; border:none; border-radius:5px; cursor:pointer; }
+    button:hover { background:#0056b3; }
+    .card { background:white; padding:15px; border-radius:8px; margin:10px auto; max-width:360px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
+    .on { color:green; font-weight:bold; }
+    .off { color:red; font-weight:bold; }
+    #driver-app { display:none; }
   </style>
 </head>
+
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="login-screen">
-  <h1>🚛 Cash Tow Me Driver Login</h1>
+<!-- ================= LOGIN / PAY WALL ================= -->
+<div id="login-screen" class="card">
+  <h1>🚛 Cash Tow Me – Driver</h1>
 
-  <div id="cta-section">
-    <h2>🚛 Start Earning Cash Today!</h2>
-    <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> and get exclusive Cash Tow calls delivered straight to your phone!</p>
-    <button id="pay-day">Pay $5/day</button>
-    <button id
+  <h3>Start Earning Cash Today</h3>
+  <p>
+    Pay <strong>$5/day</strong> or <strong>$30/month</strong><br>
+    Get exclusive local cash tow calls.<br>
+    Customer pays YOU directly.
+  </p>
+
+  <ul style="text-align:left;">
+    <li>No commissions</li>
+    <li>Work when you want</li>
+    <li>One call can cover your fee</li>
+  </ul>
+
+  <button onclick="buyAccess('DAY5')">Pay $5 (Daily)</button>
+  <button onclick="buyAccess('MONTH30')">Pay $30 (Monthly)</button>
+
+  <p id="code-display" style="font-weight:bold;"></p>
+
+  <input id="login-code" placeholder="Enter Access Code">
+  <label>
+    <input type="checkbox" id="agree"> I agree to Terms
+  </label>
+  <button onclick="login()">Login</button>
+  <p id="error" style="color:red;"></p>
+</div>
+
+<!-- ================= DRIVER APP ================= -->
+<div id="driver-app" class="card">
+  <h2>🚛 Driver Dashboard</h2>
+  <p>Status: <span id="status" class="off">OFF</span></p>
+  <button onclick="toggleStatus()">Toggle Status</button>
+
+  <h3>Add Driver</h3>
+  <input id="name" placeholder="Driver Name">
+  <input id="city" placeholder="City">
+  <input id="truck" placeholder="Truck Type">
+  <button onclick="addDriver()">Add Driver</button>
+
+  <h3>Active Drivers</h3>
+  <div id="drivers"></div>
+
+  <p style="margin-top:15px;">
+    📧 cashtowme@gmail.com<br>
+    📞 214-309-8955
+  </p>
+</div>
+
+<script>
+// BASIC PROTECTION
+document.addEventListener("contextmenu", e => e.preventDefault());
+document.addEventListener("keydown", e => {
+  if (e.key === "F12" || (e.ctrlKey && e.shiftKey)) e.preventDefault();
+});
+
+// PAYMENT SIMULATION (TEST MODE)
+function buyAccess(type) {
+  const code = type + "-" + Math.floor(1000 + Math.random()*9000);
+  let codes = JSON.parse(localStorage.getItem("codes") || "[]");
+  codes.push(code);
+  localStorage.setItem("codes", JSON.stringify(codes));
+  document.getElementById("code-display").innerText = "Your Access Code: " + code;
+}
+
+// LOGIN
+function login() {
+  const code = document.getElementById("login-code").value.trim();
+  const agree = document.getElementById("agree").checked;
+  const codes = JSON.parse(localStorage.getItem("codes") || "[]");
+
+  if (!agree) {
+    document.getElementById("error").innerText = "You must agree to Terms.";
+    return;
+  }
+
+  if (codes.includes(code)) {
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("driver-app").style.display = "block";
+  } else {
+    document.getElementById("error").innerText = "Invalid access code.";
+  }
+}
+
+// DRIVER APP LOGIC
+let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
+
+function renderDrivers() {
+  const box = document.getElementById("drivers");
+  box.innerHTML = "";
+  drivers.forEach((d,i) => {
+    box.innerHTML += `
+      <div class="card">
+        <strong>${d.name}</strong><br>
+        ${d.city} – ${d.truck}<br>
+        Status: <span class="${d.status === 'ON' ? 'on' : 'off'}">${d.status}</span><br>
+        <button onclick="toggleDriver(${i})">Toggle</button>
+        <button onclick="removeDriver(${i})">Remove</button>
+      </div>`;
+  });
+}
+
+function addDriver() {
+  const name = document.getElementById("name").value;
+  const city = document.getElementById("city").value;
+  const truck = document.getElementById("truck").value;
+  if (!name || !city || !truck) return alert("Fill all fields");
+
+  drivers.push({ name, city, truck, status:"OFF" });
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
+
+function toggleDriver(i) {
+  drivers[i].status = drivers[i].status === "ON" ? "OFF" : "ON";
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
+
+function removeDriver(i) {
+  drivers.splice(i,1);
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
+
+function toggleStatus() {
+  const s = document.getElementById("status");
+  s.innerText = s.innerText === "OFF" ? "ON" : "OFF";
+  s.className = s.innerText === "ON" ? "on" : "off";
+}
+
+renderDrivers();
+</script>
+
+</body>
+</html>
