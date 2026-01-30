@@ -1,22 +1,17 @@
-{
-  "name": "Cash Tow Me Driver",
-  "short_name": "CashTowDriver",
-  "description": "Get Cash Tow calls delivered to your phone. Toggle your availability and manage drivers.",
-  "start_url": "/index.html",
-  "display": "standalone",
-  "background_color": "#f4f4f4",
-  "theme_color": "#007bff",
-  "orientation": "portrait",
-  "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
-}
+const CACHE_NAME = "ctmd-v1";
+const FILES = [
+  "/cash-tow-me-driver/",
+  "/cash-tow-me-driver/index.html",
+  "/cash-tow-me-driver/manifest.json",
+  "/cash-tow-me-driver/icons/icon-192.png",
+  "/cash-tow-me-driver/icons/icon-512.png"
+];
+
+self.addEventListener("install", (e) => {
+  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES)));
+});
+
+self.addEventListener("fetch", (e) => {
+  e.respondWith(caches.match(e.request).then((r) => r || fetch(e.request)));
+});
+
