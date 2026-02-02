@@ -5,7 +5,6 @@
   <title>Cash Tow Me – Driver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <!-- Manifest -->
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#007bff">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,8 +15,8 @@
   <style>
     body { font-family: Arial, sans-serif; background:#f0f8ff; padding:20px; text-align:center; }
     input, button { width:90%; padding:12px; margin:8px 0; font-size:16px; border-radius:5px; }
-    button { cursor:pointer; border:none; }
-    button:hover { opacity:0.85; }
+    button { cursor:pointer; border:none; transition: 0.2s; }
+    button:active { transform: scale(0.98); opacity: 0.8; }
     .card { background:white; padding:15px; border-radius:8px; margin:10px auto; max-width:360px; box-shadow:0 2px 6px rgba(0,0,0,.2); }
     .on { color:green; font-weight:bold; }
     .off { color:red; font-weight:bold; }
@@ -25,206 +24,160 @@
     .driver-card { border:1px solid #ccc; padding:10px; border-radius:8px; margin:5px 0; background:#fefefe; }
     #cta-section { background:#fff3cd; border:1px solid #ffeeba; padding:10px; border-radius:8px; margin:10px 0; }
     #cta-section h2 { color:#856404; margin:5px 0; }
-    #pay-btn { background-color:#28a745; color:white; font-weight:bold; margin-bottom:5px; }
-    #pay-btn:hover { background-color:#218838; }
-    .approve-btn { background-color:#007bff; color:white; margin-right:5px; }
-    .approve-btn:hover { background-color:#0056b3; }
+    .approve-btn { background-color:#007bff; color:white; }
     .reject-btn { background-color:#dc3545; color:white; }
-    .reject-btn:hover { background-color:#c82333; }
+    #gps-box { background: #eefbff; padding: 10px; border-radius: 8px; margin: 10px 0; border: 1px solid #b8daff; }
   </style>
 </head>
 
 <body>
 
-<!-- LOGIN / PAYWALL -->
 <div id="login-screen" class="card">
   <h1>🚛 Cash Tow Me – Driver</h1>
-  <h3>Start Earning Cash Today</h3>
   <div id="cta-section">
     <h2>Exclusive Cash Tow Calls</h2>
-    <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> and get local calls sent directly to your phone. Customer pays YOU directly!</p>
+    <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> and get local calls directly to you.</p>
   </div>
-
-  <button id="pay-day" onclick="buyAccess('DAY5')">Pay $5 (Daily)</button>
-  <button id="pay-month" onclick="buyAccess('MONTH30')">Pay $30 (Monthly)</button>
-
-  <p id="code-display" style="font-weight:bold;"></p>
-
+  <button onclick="buyAccess('DAY5')" style="background:#007bff; color:white;">Pay $5 (Daily)</button>
+  <button onclick="buyAccess('MONTH30')" style="background:#007bff; color:white;">Pay $30 (Monthly)</button>
+  <p id="code-display" style="font-weight:bold; color:blue;"></p>
   <input id="login-code" placeholder="Enter Access Code">
-  <label><input type="checkbox" id="agree"> I agree to Terms</label><br>
-  <button onclick="login()">Login</button>
+  <label><input type="checkbox" id="agree"> I agree to Terms</label>
+  <button onclick="login()" style="background:#28a745; color:white; font-weight:bold;">Login</button>
   <p id="error" style="color:red;"></p>
 </div>
 
-<!-- DRIVER APP -->
 <div id="driver-app" class="card">
   <h2>🚛 Driver Dashboard</h2>
+  
+  <div id="gps-box">
+    <button onclick="getLocation()" style="background:#007AFF; color:white;">📍 Get My GPS Location</button>
+    <p id="location-display" style="margin-top:5px; font-size:14px;"></p>
+    <div id="map-link-container"></div>
+  </div>
+
   <p>Status: <span id="status" class="off">OFF</span></p>
-  <button onclick="toggleStatus()">Toggle Status</button>
+  <button onclick="toggleStatus()" style="background:#6c757d; color:white;">Toggle Status</button>
 
   <h3>Add Driver</h3>
   <input id="name" placeholder="Driver Name">
   <input id="city" placeholder="City">
   <input id="truck" placeholder="Truck Type">
-  <button onclick="addDriver()">Add Driver</button>
-
-  <h3>Filter Drivers by City</h3>
-  <input id="filter-city" placeholder="Enter City">
-  <button onclick="filterDrivers()">Filter</button>
-  <button onclick="clearFilter()">Show All</button>
+  <button onclick="addDriver()" style="background:#007bff; color:white;">Add Driver</button>
 
   <h3>Active Drivers</h3>
   <div id="drivers"></div>
 
-  <p style="margin-top:15px;">
-    📧 cashtowme@gmail.com<br>
-    📞 214-309-8955
+  <p style="margin-top:15px; font-size:12px;">
+    📧 cashtowme@gmail.com | 📞 214-309-8955
   </p>
-
-  <button onclick="openAdmin()" style="background-color:#343a40; color:white;">Admin Dashboard</button>
+  <button onclick="openAdmin()" style="background-color:#343a40; color:white; font-size:12px;">Admin Panel</button>
 </div>
 
-<!-- ADMIN DASHBOARD -->
 <div id="admin-dashboard" class="card">
-  <h2>👮 Admin Approval Dashboard</h2>
-  <h3>Pending Drivers</h3>
+  <h2>👮 Admin Approval</h2>
   <div id="pending-drivers"></div>
-  <button onclick="closeAdmin()" style="background:#6c757d; color:white;">Close Admin Dashboard</button>
+  <button onclick="closeAdmin()" style="background:#6c757d; color:white;">Close</button>
 </div>
 
 <script>
-// ----------------- BASIC PROTECTION -----------------
+// --- PROTECTION ---
 document.addEventListener("contextmenu", e => e.preventDefault());
-document.addEventListener("keydown", e => { if(e.key==="F12"||(e.ctrlKey&&e.shiftKey&&e.key==="I")) e.preventDefault(); });
 
-// ----------------- PAY / ACCESS -----------------
+// --- PAY / ACCESS ---
 function buyAccess(type){
-  const code=type+"-"+Math.floor(1000+Math.random()*9000);
-  let codes=JSON.parse(localStorage.getItem("codes")||"[]");
+  const code = type + "-" + Math.floor(1000 + Math.random() * 9000);
+  let codes = JSON.parse(localStorage.getItem("codes") || "[]");
   codes.push(code);
-  localStorage.setItem("codes",JSON.stringify(codes));
-  document.getElementById("code-display").innerText="Your Access Code: "+code;
+  localStorage.setItem("codes", JSON.stringify(codes));
+  document.getElementById("code-display").innerText = "Your Access Code: " + code;
 }
 
-// ----------------- LOGIN -----------------
+// --- LOGIN ---
 function login(){
-  const code=document.getElementById("login-code").value.trim();
-  const agree=document.getElementById("agree").checked;
-  const codes=JSON.parse(localStorage.getItem("codes")||"[]");
-  if(!agree){document.getElementById("error").innerText="You must agree to Terms."; return;}
+  const code = document.getElementById("login-code").value.trim();
+  const agree = document.getElementById("agree").checked;
+  const codes = JSON.parse(localStorage.getItem("codes") || "[]");
+  if(!agree){ alert("Agree to terms"); return; }
   if(codes.includes(code)){
     document.getElementById("login-screen").style.display="none";
     document.getElementById("driver-app").style.display="block";
     renderDrivers();
-  }else{document.getElementById("error").innerText="Invalid access code.";}
+  } else { document.getElementById("error").innerText="Invalid code."; }
 }
 
-// ----------------- DRIVER APP -----------------
-let drivers=JSON.parse(localStorage.getItem("drivers")||"[]");
-let filteredCity="";
+// --- GPS FUNCTION ---
+function getLocation() {
+  const display = document.getElementById("location-display");
+  const mapContainer = document.getElementById("map-link-container");
+  if (navigator.geolocation) {
+    display.innerText = "Locating...";
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
+      display.innerHTML = `Lat: ${lat.toFixed(4)} | Lon: ${lon.toFixed(4)}`;
+      mapContainer.innerHTML = `<button onclick="window.open('http://maps.apple.com/?q=${lat},${lon}')" style="background:#34C759; color:white;">Open Apple Maps</button>`;
+    }, () => { display.innerText = "Location denied."; });
+  }
+}
 
-const statusEl=document.getElementById("status");
-const nameInput=document.getElementById("name");
-const cityInput=document.getElementById("city");
-const truckInput=document.getElementById("truck");
-const driverListEl=document.getElementById("drivers");
+// --- DRIVER LOGIC ---
+let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
+const statusEl = document.getElementById("status");
 
-// Toggle status
-function toggleStatus(){ statusEl.textContent=statusEl.textContent.includes("OFF")?"ON":"OFF"; statusEl.className=statusEl.textContent==="ON"?"on":"off"; }
+function toggleStatus(){ 
+  statusEl.textContent = statusEl.textContent === "OFF" ? "ON" : "OFF"; 
+  statusEl.className = statusEl.textContent === "ON" ? "on" : "off"; 
+}
 
-// Add driver
 function addDriver(){
-  const name=nameInput.value.trim();
-  const city=cityInput.value.trim();
-  const truck=truckInput.value.trim();
-  if(!name||!city||!truck){alert("Fill out all fields"); return;}
+  const name = document.getElementById("name").value;
+  const city = document.getElementById("city").value;
+  const truck = document.getElementById("truck").value;
+  if(!name || !city || !truck) return;
   drivers.push({name, city, truck, status:"OFF", approved:false});
-  localStorage.setItem("drivers",JSON.stringify(drivers));
-  nameInput.value=cityInput.value=truckInput.value="";
-  alert("Driver added — pending admin approval");
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  alert("Pending Approval");
   renderDrivers();
 }
 
-// Render drivers
 function renderDrivers(){
-  driverListEl.innerHTML="";
-  drivers.filter(d=>d.approved).filter(d=>!filteredCity||d.city.toLowerCase()===filteredCity.toLowerCase()).forEach((d,i)=>{
-    const div=document.createElement("div");
-    div.className="driver-card";
-    div.innerHTML=`<strong>${d.name}</strong><br>📍 ${d.city}<br>🚛 ${d.truck}<br>Status: <span class="${d.status==="ON"?"on":"off"}">${d.status}</span><br>
-      <button onclick="toggleDriver(${i})">Toggle Status</button>
-      <button onclick="removeDriver(${i})">Remove</button>`;
-    driverListEl.appendChild(div);
+  const list = document.getElementById("drivers");
+  list.innerHTML = "";
+  drivers.filter(d => d.approved).forEach((d, i) => {
+    const div = document.createElement("div");
+    div.className = "driver-card";
+    div.innerHTML = `<strong>${d.name}</strong> - ${d.city}<br><button onclick="removeDriver(${i})">Remove</button>`;
+    list.appendChild(div);
   });
 }
 
-// Toggle driver
-function toggleDriver(i){ drivers[i].status=drivers[i].status==="ON"?"OFF":"ON"; localStorage.setItem("drivers",JSON.stringify(drivers)); renderDrivers(); }
-
-// Remove driver
 function removeDriver(i){ drivers.splice(i,1); localStorage.setItem("drivers",JSON.stringify(drivers)); renderDrivers(); }
 
-// Filter
-function filterDrivers(){ filteredCity=document.getElementById("filter-city").value; renderDrivers(); }
-function clearFilter(){ filteredCity=""; document.getElementById("filter-city").value=""; renderDrivers(); }
-
-// ----------------- ADMIN DASHBOARD -----------------
-const adminPassword="admin123"; // Change
+// --- ADMIN ---
 function openAdmin(){
-  const pwd=prompt("Enter admin password:");
-  if(pwd===adminPassword){ document.getElementById("admin-dashboard").style.display="block"; renderPendingDrivers(); }
-  else{ alert("Incorrect password"); }
+  if(prompt("Pass:") === "admin123"){ 
+    document.getElementById("admin-dashboard").style.display="block"; 
+    renderPending(); 
+  }
 }
 function closeAdmin(){ document.getElementById("admin-dashboard").style.display="none"; }
 
-function renderPendingDrivers(){
-  const pendingEl=document.getElementById("pending-drivers");
-  pendingEl.innerHTML="";
-  drivers.filter(d=>!d.approved).forEach((d,i)=>{
-    const div=document.createElement("div");
-    div.className="driver-card";
-    div.innerHTML=`<strong>${d.name}</strong> – ${d.truck}<br>📍 ${d.city}<br>
-      <button class="approve-btn" onclick="approveDriver(${i})">Approve</button>
-      <button class="reject-btn" onclick="rejectDriver(${i})">Reject</button>`;
-    pendingEl.appendChild(div);
+function renderPending(){
+  const p = document.getElementById("pending-drivers");
+  p.innerHTML = "";
+  drivers.filter(d => !d.approved).forEach((d, i) => {
+    const div = document.createElement("div");
+    div.innerHTML = `${d.name} <button onclick="approve(${i})">Approve</button>`;
+    p.appendChild(div);
   });
 }
+function approve(i){ drivers[i].approved=true; localStorage.setItem("drivers",JSON.stringify(drivers)); renderPending(); renderDrivers(); }
 
-function approveDriver(i){ drivers[i].approved=true; localStorage.setItem("drivers",JSON.stringify(drivers)); renderPendingDrivers(); renderDrivers(); }
-function rejectDriver(i){ drivers.splice(i,1); localStorage.setItem("drivers",JSON.stringify(drivers)); renderPendingDrivers(); }
-
-</script><script>
-    // 1. YOUR EXISTING CODE (Login, Add Driver, etc.)
-    // [Keep everything you already had here]
-
-    // 2. THE NEW GPS FUNCTION
-    function getLocation() {
-      const display = document.getElementById("location-display");
-      const mapContainer = document.getElementById("map-link-container");
-      
-      if (navigator.geolocation) {
-        display.innerText = "Locating...";
-        navigator.geolocation.getCurrentPosition((position) => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
-          display.innerHTML = `<strong>Lat:</strong> ${lat.toFixed(4)} <br> <strong>Lon:</strong> ${lon.toFixed(4)}`;
-          mapContainer.innerHTML = `
-            <button onclick="window.open('http://maps.apple.com/?q=${lat},${lon}')" 
-                    style="background:#34C759; color:white; margin-top:10px;">
-              View on Apple Maps
-            </button>`;
-        }, (error) => {
-          display.innerText = "Error: Allow location in Settings.";
-        });
-      }
-    }
-
-    // 3. THE SERVICE WORKER REGISTRATION (Essential for Apple)
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js');
-    }
-  </script>
-</body>
-</html>
+// --- SERVICE WORKER ---
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js');
+}
+</script>
 </body>
 </html>
