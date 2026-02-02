@@ -107,17 +107,34 @@ function login(){
 }
 
 // --- GPS FUNCTION ---
-function getLocation() {
-  const display = document.getElementById("location-display");
-  const mapContainer = document.getElementById("map-link-container");
-  if (navigator.geolocation) {
-    display.innerText = "Locating...";
+function toggleStatus() {
+  if (statusEl.textContent === "OFF") {
+    // Driver is going ON DUTY - get their location first
     navigator.geolocation.getCurrentPosition((pos) => {
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
-      display.innerHTML = `Lat: ${lat.toFixed(4)} | Lon: ${lon.toFixed(4)}`;
-      mapContainer.innerHTML = `<button onclick="window.open('http://maps.apple.com/?q=${lat},${lon}')" style="background:#34C759; color:white;">Open Apple Maps</button>`;
-    }, () => { display.innerText = "Location denied."; });
+      
+      statusEl.textContent = "ON";
+      statusEl.className = "on";
+      
+      // Update this driver's location in the list
+      updateDriverLocation(lat, lon, "ON");
+    });
+  } else {
+    statusEl.textContent = "OFF";
+    statusEl.className = "off";
+    updateDriverLocation(null, null, "OFF");
+  }
+}
+
+function updateDriverLocation(lat, lon, status) {
+  let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
+  // Assume the first driver for this demo; in a real app, you'd match by name/ID
+  if(drivers.length > 0) {
+    drivers[0].lat = lat;
+    drivers[0].lon = lon;
+    drivers[0].status = status;
+    localStorage.setItem("drivers", JSON.stringify(drivers));
   }
 }
 
