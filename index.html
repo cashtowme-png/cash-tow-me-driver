@@ -193,6 +193,38 @@ function renderPendingDrivers(){
 function approveDriver(i){ drivers[i].approved=true; localStorage.setItem("drivers",JSON.stringify(drivers)); renderPendingDrivers(); renderDrivers(); }
 function rejectDriver(i){ drivers.splice(i,1); localStorage.setItem("drivers",JSON.stringify(drivers)); renderPendingDrivers(); }
 
-</script>
+</script><script>
+    // 1. YOUR EXISTING CODE (Login, Add Driver, etc.)
+    // [Keep everything you already had here]
+
+    // 2. THE NEW GPS FUNCTION
+    function getLocation() {
+      const display = document.getElementById("location-display");
+      const mapContainer = document.getElementById("map-link-container");
+      
+      if (navigator.geolocation) {
+        display.innerText = "Locating...";
+        navigator.geolocation.getCurrentPosition((position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          display.innerHTML = `<strong>Lat:</strong> ${lat.toFixed(4)} <br> <strong>Lon:</strong> ${lon.toFixed(4)}`;
+          mapContainer.innerHTML = `
+            <button onclick="window.open('http://maps.apple.com/?q=${lat},${lon}')" 
+                    style="background:#34C759; color:white; margin-top:10px;">
+              View on Apple Maps
+            </button>`;
+        }, (error) => {
+          display.innerText = "Error: Allow location in Settings.";
+        });
+      }
+    }
+
+    // 3. THE SERVICE WORKER REGISTRATION (Essential for Apple)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./service-worker.js');
+    }
+  </script>
+</body>
+</html>
 </body>
 </html>
