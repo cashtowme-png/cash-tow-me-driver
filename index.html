@@ -82,11 +82,23 @@
 </div>
 
 <script>
-// --- PROTECTION ---
+// -------- BASIC PROTECTION --------
 document.addEventListener("contextmenu", e => e.preventDefault());
 
-// --- PAY / ACCESS ---
-function buyAccess(type){
+// -------- GLOBAL STATE --------
+let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
+
+// -------- ELEMENTS --------
+const loginScreen = document.getElementById("login-screen");
+const driverApp = document.getElementById("driver-app");
+const adminDashboard = document.getElementById("admin-dashboard");
+
+const statusEl = document.getElementById("status");
+const driversEl = document.getElementById("drivers");
+const pendingEl = document.getElementById("pending-drivers");
+
+// -------- PAY / ACCESS --------
+function buyAccess(type) {
   const code = type + "-" + Math.floor(1000 + Math.random() * 9000);
   let codes = JSON.parse(localStorage.getItem("codes") || "[]");
   codes.push(code);
@@ -94,106 +106,114 @@ function buyAccess(type){
   document.getElementById("code-display").innerText = "Your Access Code: " + code;
 }
 
-// --- LOGIN ---
-function login(){
+// -------- LOGIN --------
+function login() {
   const code = document.getElementById("login-code").value.trim();
   const agree = document.getElementById("agree").checked;
   const codes = JSON.parse(localStorage.getItem("codes") || "[]");
-  if(!agree){ alert("Agree to terms"); return; }
-  if(codes.includes(code)){
-    document.getElementById("login-screen").style.display="none";
-    document.getElementById("driver-app").style.display="block";
+
+  if (!agree) {
+    alert("You must agree to the terms");
+    return;
+  }
+
+  if (codes.includes(code)) {
+    loginScreen.style.display = "none";
+    driverApp.style.display = "block";
     renderDrivers();
-  } else { document.getElementById("error").innerText="Invalid code."; }
-}
-
-// --- GPS FUNCTION ---
-function toggleStatus() {
-  if (statusEl.textContent === "OFF") {
-    // Driver is going ON DUTY - get their location first
-    navigator.geolocation.getCurrentPosition((pos) => {
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-      
-      statusEl.textContent = "ON";
-      statusEl.className = "on";
-      
-      // Update this driver's location in the list
-      updateDriverLocation(lat, lon, "ON");
-    });
   } else {
-    statusEl.textContent = "OFF";
-    statusEl.className = "off";
-    updateDriverLocation(null, null, "OFF");
+    document.getElementById("error").innerText = "Invalid access code";
   }
 }
 
-function updateDriverLocation(lat, lon, status) {
-  let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
-  // Assume the first driver for this demo; in a real app, you'd match by name/ID
-  if(drivers.length > 0) {
-    drivers[0].lat = lat;
-    drivers[0].lon = lon;
-    drivers[0].status = status;
-    localStorage.setItem("drivers", JSON.stringify(drivers));
+// -------- STATUS TOGGLE --------
+function toggleStatus() {
+  const isOff = statusEl.textContent === "OFF";
+  statusEl.textContent = isOff ? "ON" : "OFF";
+  statusEl.className = isOff ? "on" : "off";
+}
+
+// -------- ADD DRIVER --------
+function addDriver() {
+  const name = document.getElementById("name").value.trim();
+  const city = document.getElementById("city").value.trim();
+  const truck = document.getElementById("truck").value.trim();
+
+  if (!name || !city || !truck) {
+    alert("Fill out all fields");
+    return;
   }
-}
 
-// --- DRIVER LOGIC ---
-let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
-const statusEl = document.getElementById("status");
+  drivers.push({
+    name,
+    city,
+    truck,
+    status: "OFF",
+    approved: false
+  });
 
-function toggleStatus(){ 
-  statusEl.textContent = statusEl.textContent === "OFF" ? "ON" : "OFF"; 
-  statusEl.className = statusEl.textContent === "ON" ? "on" : "off"; 
-}
-
-function addDriver(){
-  const name = document.getElementById("name").value;
-  const city = document.getElementById("city").value;
-  const truck = document.getElementById("truck").value;
-  if(!name || !city || !truck) return;
-  drivers.push({name, city, truck, status:"OFF", approved:false});
   localStorage.setItem("drivers", JSON.stringify(drivers));
-  alert("Pending Approval");
+  alert("Driver added. Pending admin approval.");
   renderDrivers();
 }
 
-function renderDrivers(){
-  const list = document.getElementById("drivers");
-  list.innerHTML = "";
+// -------- RENDER DRIVERS --------
+function renderDrivers() {
+  driversEl.innerHTML = "";
+
   drivers.filter(d => d.approved).forEach((d, i) => {
     const div = document.createElement("div");
     div.className = "driver-card";
-    div.innerHTML = `<strong>${d.name}</strong> - ${d.city}<br><button onclick="removeDriver(${i})">Remove</button>`;
-    list.appendChild(div);
+    div.innerHTML = `
+      <strong>${d.name}</strong><br>
+      📍 ${d.city}<br>
+      🚛 ${d.truck}<br>
+      Status: ${d.status}<br>
+      <button onclick="removeDriver(${i})">Remove</button>
+    `;
+    driversEl.appendChild(div);
   });
 }
 
-function removeDriver(i){ drivers.splice(i,1); localStorage.setItem("drivers",JSON.stringify(drivers)); renderDrivers(); }
+// -------- REMOVE DRIVER --------
+function removeDriver(i) {
+  drivers.splice(i, 1);
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderDrivers();
+}
 
-// --- ADMIN ---
-function openAdmin(){
-  if(prompt("Pass:") === "admin123"){ 
-    document.getElementById("admin-dashboard").style.display="block"; 
-    renderPending(); 
+// -------- ADMIN --------
+function openAdmin() {
+  if (prompt("Admin password:") === "admin123") {
+    adminDashboard.style.display = "block";
+    renderPending();
   }
 }
-function closeAdmin(){ document.getElementById("admin-dashboard").style.display="none"; }
 
-function renderPending(){
-  const p = document.getElementById("pending-drivers");
-  p.innerHTML = "";
+function closeAdmin() {
+  adminDashboard.style.display = "none";
+}
+
+function renderPending() {
+  pendingEl.innerHTML = "";
   drivers.filter(d => !d.approved).forEach((d, i) => {
     const div = document.createElement("div");
-    div.innerHTML = `${d.name} <button onclick="approve(${i})">Approve</button>`;
-    p.appendChild(div);
+    div.innerHTML = `
+      ${d.name}
+      <button onclick="approve(${i})">Approve</button>
+    `;
+    pendingEl.appendChild(div);
   });
 }
-function approve(i){ drivers[i].approved=true; localStorage.setItem("drivers",JSON.stringify(drivers)); renderPending(); renderDrivers(); }
 
-// --- SERVICE WORKER ---
-<script>
+function approve(i) {
+  drivers[i].approved = true;
+  localStorage.setItem("drivers", JSON.stringify(drivers));
+  renderPending();
+  renderDrivers();
+}
+
+// -------- SERVICE WORKER --------
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register(
     "/cash-tow-me-driver/service-worker.js",
@@ -201,6 +221,7 @@ if ("serviceWorker" in navigator) {
   );
 }
 </script>
+
 
 </body>
 </html>
