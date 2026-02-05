@@ -5,12 +5,13 @@
   <title>Cash Tow Me – Driver</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="/cash-tow-me-driver/manifest.json">
   <meta name="theme-color" content="#007bff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="icon" href="./app-icon.png">
+  <link rel="apple-touch-icon" href="/cash-tow-me-driver/icons/icon-192.png">
+  <link rel="icon" href="/cash-tow-me-driver/icons/icon-192.png">
+
 
   <style>
     body { font-family: Arial, sans-serif; background:#f0f8ff; padding:20px; text-align:center; }
@@ -192,9 +193,14 @@ function renderPending(){
 function approve(i){ drivers[i].approved=true; localStorage.setItem("drivers",JSON.stringify(drivers)); renderPending(); renderDrivers(); }
 
 // --- SERVICE WORKER ---
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js');
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register(
+    "/cash-tow-me-driver/service-worker.js",
+    { scope: "/cash-tow-me-driver/" }
+  );
 }
 </script>
+
 </body>
 </html>
