@@ -182,18 +182,23 @@ function addDriver() {
     return;
   }
 
-  drivers.push({
+  db.collection("drivers").add({
     name,
     city,
     truck,
     status: "OFF",
-    approved: false
+    approved: false,
+    createdAt: Date.now()
+  })
+  .then(() => {
+    alert("Driver saved to Firestore");
+  })
+  .catch(err => {
+    alert("Error: " + err.message);
   });
-
-  localStorage.setItem("drivers", JSON.stringify(drivers));
-  alert("Driver added. Pending admin approval.");
-  renderDrivers();
 }
+
+
 
 // -------- RENDER DRIVERS --------
 function renderDrivers() {
