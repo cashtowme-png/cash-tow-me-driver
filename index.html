@@ -1,38 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Cash Tow Me – Driver</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAbB10Wg4OrZFEXV0JP9cQRHiy5-31Eiz4",
-      authDomain: "cash-tow-me.firebaseapp.com",
-      projectId: "cash-tow-me",
-      storageBucket: "cash-tow-me.firebasestorage.app",
-      messagingSenderId: "238625161564",
-      appId: "1:238625161564:web:6907905ea88aef4f1f8199"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
-
-  <style>
-    body { font-family: Arial; text-align:center; padding:20px; }
-    input, button { width:90%; padding:10px; margin:8px 0; }
-    button { background:#007bff; color:white; border:none; }
-  </style>
-</head>
-
 <body>
 
-<h2>Driver Test</h2>
+<h2>🚛 Cash Tow Me – Driver</h2>
 
 <input id="name" placeholder="Driver Name">
 <input id="city" placeholder="City">
@@ -40,145 +8,26 @@
 <button onclick="addDriver()">Add Driver</button>
 
 <br><br>
-<button onclick="testFirestore()">TEST FIRESTORE</button>
+<button onclick="openAdmin()">Admin Panel</button>
+
+<h3>Approved Drivers</h3>
+<div id="drivers"></div>
+
+<hr>
+
+<h3>Pending Drivers (Admin Only)</h3>
+<div id="pending"></div>
 
 <script>
-function addDriver() {
-  const name = document.getElementById("name").value;
-  const city = document.getElementById("city").value;
-  const truck = document.getElementById("truck").value;
 
-  if (!name || !city || !truck) {
-    alert("Fill all fields");
-    return;
-  }
-
-  db.collection("drivers").add({
-    name: name,
-    city: city,
-    truck: truck,
-    status: "OFF",
-    approved: false,
-    createdAt: Date.now()
-  })
-  .then(() => {
-    alert("Driver saved to Firestore");
-  })
-  .catch(err => {
-    alert("Error: " + err.message);
-  });
-}
-
-
-
-<div id="login-screen" class="card">
-  <h1>🚛 Cash Tow Me – Driver</h1>
-  <div id="cta-section">
-    <h2>Exclusive Cash Tow Calls</h2>
-    <p>Pay <strong>$5/day</strong> or <strong>$30/month</strong> and get local calls directly to you.</p>
-  </div>
-  <button onclick="buyAccess('DAY5')" style="background:#007bff; color:white;">Pay $5 (Daily)</button>
-  <button onclick="buyAccess('MONTH30')" style="background:#007bff; color:white;">Pay $30 (Monthly)</button>
-  <p id="code-display" style="font-weight:bold; color:blue;"></p>
-  <input id="login-code" placeholder="Enter Access Code">
-  <label><input type="checkbox" id="agree"> I agree to Terms</label>
-  <button onclick="login()" style="background:#28a745; color:white; font-weight:bold;">Login</button>
-  <p id="error" style="color:red;"></p>
-</div>
-
-<div id="driver-app" class="card">
-  <h2>🚛 Driver Dashboard</h2>
-  
-  <div id="gps-box">
-    <button onclick="getLocation()" style="background:#007AFF; color:white;">📍 Get My GPS Location</button>
-    <p id="location-display" style="margin-top:5px; font-size:14px;"></p>
-    <div id="map-link-container"></div>
-  </div>
-
-  <p>Status: <span id="status" class="off">OFF</span></p>
-  <button onclick="toggleStatus()" style="background:#6c757d; color:white;">Toggle Status</button>
-
-  <h3>Add Driver</h3>
-  <input id="name" placeholder="Driver Name">
-  <input id="city" placeholder="City">
-  <input id="truck" placeholder="Truck Type">
-  <button onclick="addDriver()" style="background:#007bff; color:white;">Add Driver</button>
-
-  <h3>Active Drivers</h3>
-  <div id="drivers"></div>
-
-  <p style="margin-top:15px; font-size:12px;">
-    📧 cashtowme@gmail.com | 📞 214-309-8955
-  </p>
-  <button onclick="openAdmin()" style="background-color:#343a40; color:white; font-size:12px;">Admin Panel</button>
-</div>
-
-<div id="admin-dashboard" class="card">
-  <h2>👮 Admin Approval</h2>
-  <div id="pending-drivers"></div>
-  <button onclick="closeAdmin()" style="background:#6c757d; color:white;">Close</button>
-</div>
-
-<script>
-// -------- BASIC PROTECTION --------
-document.addEventListener("contextmenu", e => e.preventDefault());
-
-// -------- GLOBAL STATE --------
-let drivers = JSON.parse(localStorage.getItem("drivers") || "[]");
-
-// -------- ELEMENTS --------
-const loginScreen = document.getElementById("login-screen");
-const driverApp = document.getElementById("driver-app");
-const adminDashboard = document.getElementById("admin-dashboard");
-
-const statusEl = document.getElementById("status");
-const driversEl = document.getElementById("drivers");
-const pendingEl = document.getElementById("pending-drivers");
-
-// -------- PAY / ACCESS --------
-function buyAccess(type) {
-  const code = type + "-" + Math.floor(1000 + Math.random() * 9000);
-  let codes = JSON.parse(localStorage.getItem("codes") || "[]");
-  codes.push(code);
-  localStorage.setItem("codes", JSON.stringify(codes));
-  document.getElementById("code-display").innerText = "Your Access Code: " + code;
-}
-
-// -------- LOGIN --------
-function login() {
-  const code = document.getElementById("login-code").value.trim();
-  const agree = document.getElementById("agree").checked;
-  const codes = JSON.parse(localStorage.getItem("codes") || "[]");
-
-  if (!agree) {
-    alert("You must agree to the terms");
-    return;
-  }
-
-  if (codes.includes(code)) {
-    loginScreen.style.display = "none";
-    driverApp.style.display = "block";
-    renderDrivers();
-  } else {
-    document.getElementById("error").innerText = "Invalid access code";
-  }
-}
-
-// -------- STATUS TOGGLE --------
-function toggleStatus() {
-  const isOff = statusEl.textContent === "OFF";
-  statusEl.textContent = isOff ? "ON" : "OFF";
-  statusEl.className = isOff ? "on" : "off";
-}
-
-// -------- ADD DRIVER --------
+// ---------------- ADD DRIVER ----------------
 function addDriver() {
   const name = document.getElementById("name").value.trim();
   const city = document.getElementById("city").value.trim();
   const truck = document.getElementById("truck").value.trim();
 
   if (!name || !city || !truck) {
-    alert("Fill out all fields");
+    alert("Fill all fields");
     return;
   }
 
@@ -191,80 +40,64 @@ function addDriver() {
     createdAt: Date.now()
   })
   .then(() => {
-    alert("Driver saved to Firestore");
+    alert("Driver submitted for approval");
+    document.getElementById("name").value = "";
+    document.getElementById("city").value = "";
+    document.getElementById("truck").value = "";
+    loadDrivers();
   })
-  .catch(err => {
-    alert("Error: " + err.message);
+  .catch(err => alert(err.message));
+}
+
+// ---------------- LOAD DRIVERS ----------------
+function loadDrivers() {
+  const approvedDiv = document.getElementById("drivers");
+  const pendingDiv = document.getElementById("pending");
+
+  approvedDiv.innerHTML = "";
+  pendingDiv.innerHTML = "";
+
+  db.collection("drivers").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
+      if (d.approved) {
+        approvedDiv.innerHTML += `
+          <div>
+            <strong>${d.name}</strong> - ${d.city}
+          </div>
+        `;
+      } else {
+        pendingDiv.innerHTML += `
+          <div>
+            ${d.name}
+            <button onclick="approveDriver('${doc.id}')">Approve</button>
+          </div>
+        `;
+      }
+    });
   });
 }
 
-
-
-// -------- RENDER DRIVERS --------
-function renderDrivers() {
-  driversEl.innerHTML = "";
-
-  drivers.filter(d => d.approved).forEach((d, i) => {
-    const div = document.createElement("div");
-    div.className = "driver-card";
-    div.innerHTML = `
-      <strong>${d.name}</strong><br>
-      📍 ${d.city}<br>
-      🚛 ${d.truck}<br>
-      Status: ${d.status}<br>
-      <button onclick="removeDriver(${i})">Remove</button>
-    `;
-    driversEl.appendChild(div);
-  });
+// ---------------- APPROVE DRIVER ----------------
+function approveDriver(id) {
+  db.collection("drivers").doc(id).update({
+    approved: true
+  }).then(loadDrivers);
 }
 
-// -------- REMOVE DRIVER --------
-function removeDriver(i) {
-  drivers.splice(i, 1);
-  localStorage.setItem("drivers", JSON.stringify(drivers));
-  renderDrivers();
-}
-
-// -------- ADMIN --------
+// ---------------- ADMIN PASSWORD ----------------
 function openAdmin() {
-  if (prompt("Admin password:") === "admin123") {
-    adminDashboard.style.display = "block";
-    renderPending();
+  if (prompt("Enter admin password") === "admin123") {
+    loadDrivers();
+  } else {
+    alert("Wrong password");
   }
 }
 
-function closeAdmin() {
-  adminDashboard.style.display = "none";
-}
+// ---------------- INIT ----------------
+loadDrivers();
 
-function renderPending() {
-  pendingEl.innerHTML = "";
-  drivers.filter(d => !d.approved).forEach((d, i) => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      ${d.name}
-      <button onclick="approve(${i})">Approve</button>
-    `;
-    pendingEl.appendChild(div);
-  });
-}
-
-function approve(i) {
-  drivers[i].approved = true;
-  localStorage.setItem("drivers", JSON.stringify(drivers));
-  renderPending();
-  renderDrivers();
-}
-
-// -------- SERVICE WORKER --------
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register(
-    "/cash-tow-me-driver/service-worker.js",
-    { scope: "/cash-tow-me-driver/" }
-  );
-}
 </script>
 
-
 </body>
-</html>
