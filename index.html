@@ -158,9 +158,14 @@ function loadRequests() {
             <a href="https://www.google.com/maps?q=${r.latitude},${r.longitude}" target="_blank">
               Open in Maps
             </a><br><br>
-            <button onclick="completeRequest('${doc.id}')">
-              Mark Completed
-            </button>
+          <button onclick="acceptRequest('${doc.id}', 'ADMIN')">
+  Accept Job
+</button>
+
+<button onclick="completeRequest('${doc.id}')">
+  Mark Completed
+</button>
+
           </div>
         `;
 
@@ -188,6 +193,27 @@ function approveDriver(id) {
 function deleteDriver(id) {
   db.collection("drivers").doc(id).delete();
 }
+
+
+function acceptRequest(requestId, driverId) {
+
+  navigator.geolocation.getCurrentPosition(position => {
+
+    const driverLat = position.coords.latitude;
+    const driverLng = position.coords.longitude;
+
+    db.collection("requests").doc(requestId).update({
+      status: "assigned",
+      assignedTo: driverId,
+      driverLatitude: driverLat,
+      driverLongitude: driverLng,
+      acceptedAt: Date.now()
+    });
+
+  });
+
+}
+
 
 
 function toggleStatus(id, currentStatus) {
