@@ -49,10 +49,15 @@
 <div id="adminSection" style="display:none; margin-top:20px;">
   <h2>🛠 Admin Dashboard</h2>
 
-  <h3>All Drivers</h3>
-  <div id="allDrivers"></div>
+  <h3>🚨 Incoming Tow Requests</h3>
+  <div id="requestsList"></div>
 
+  <hr>
+
+  <h3>🚛 All Drivers</h3>
+  <div id="allDrivers"></div>
 </div>
+
 
 
 
@@ -132,7 +137,51 @@ function addDriver() {
 }
 
 
-function loadAllDrivers() {
+loadAllDrivers();
+loadRequests();
+
+
+  const container = document.getElementById("requestsList");
+
+  db.collection("requests")
+    .orderBy("createdAt", "desc")
+    .onSnapshot(snapshot => {
+
+      container.innerHTML = "";
+
+      if (snapshot.empty) {
+        container.innerHTML = "<p>No active requests.</p>";
+        return;
+      }
+
+      snapshot.forEach(doc => {
+
+        const r = doc.data();
+
+        container.innerHTML += `
+          <div class="card">
+            <strong>Status:</strong> ${r.status}<br>
+            <strong>Latitude:</strong> ${r.latitude}<br>
+            <strong>Longitude:</strong> ${r.longitude}<br>
+            <a href="https://www.google.com/maps?q=${r.latitude},${r.longitude}" target="_blank">
+              Open in Maps
+            </a><br><br>
+            <button onclick="completeRequest('${doc.id}')">
+              Mark Completed
+            </button>
+          </div>
+        `;
+
+      });
+
+    });
+
+}
+function completeRequest(id) {
+  db.collection("requests").doc(id).update({
+    status: "completed"
+  });
+}
 
   const container = document.getElementById("allDrivers");
 
