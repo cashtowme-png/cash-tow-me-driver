@@ -9,9 +9,48 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
- <script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAbB10Wg4OrZFEXV0JP9cQRHiy5-31Eiz4",
+      authDomain: "cash-tow-me.firebaseapp.com",
+      projectId: "cash-tow-me",
+      storageBucket: "cash-tow-me.firebasestorage.app",
+      messagingSenderId: "238625161564",
+      appId: "1:238625161564:web:6907905ea88aef4f1f8199"
+    };
 
-// ---------------- ADD DRIVER ----------------
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <style>
+    body { font-family: Arial; padding:20px; text-align:center; }
+    input, button { width:90%; padding:10px; margin:8px 0; }
+    button { background:#007bff; color:white; border:none; cursor:pointer; }
+    .card { border:1px solid #ddd; padding:10px; margin-top:10px; }
+  </style>
+</head>
+
+<body>
+
+<h2>🚛 Cash Tow Me – Driver</h2>
+
+<input id="name" placeholder="Driver Name">
+<input id="city" placeholder="City">
+<input id="truck" placeholder="Truck Type">
+<button onclick="addDriver()">Add Driver</button>
+
+<br><br>
+<button onclick="openAdmin()">Admin Panel</button>
+
+<h3>Approved Drivers</h3>
+<div id="approved"></div>
+
+<h3>Pending Drivers</h3>
+<div id="pending"></div>
+
+<script>
+
 function addDriver() {
   const name = document.getElementById("name").value.trim();
   const city = document.getElementById("city").value.trim();
@@ -38,7 +77,6 @@ function addDriver() {
   });
 }
 
-// ---------------- LOAD DRIVERS ----------------
 function loadDrivers() {
   const approvedDiv = document.getElementById("approved");
   const pendingDiv = document.getElementById("pending");
@@ -72,14 +110,12 @@ function loadDrivers() {
   });
 }
 
-// ---------------- APPROVE DRIVER ----------------
 function approveDriver(id) {
   db.collection("drivers").doc(id).update({
     approved: true
   }).then(loadDrivers);
 }
 
-// ---------------- TOGGLE STATUS ----------------
 function toggleStatus(id, currentStatus) {
   const newStatus = currentStatus === "ON" ? "OFF" : "ON";
 
@@ -88,7 +124,6 @@ function toggleStatus(id, currentStatus) {
   }).then(loadDrivers);
 }
 
-// ---------------- ADMIN ----------------
 function openAdmin() {
   if (prompt("Admin password") === "admin123") {
     loadDrivers();
@@ -97,11 +132,9 @@ function openAdmin() {
   }
 }
 
-// ---------------- INIT ----------------
 loadDrivers();
 
 </script>
-
 
 </body>
 </html>
