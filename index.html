@@ -63,7 +63,8 @@ function loadDrivers() {
     snapshot.forEach(doc => {
       const d = doc.data();
 
-      if (d.approved) {
+     if (d.approved && d.status === "ON") {
+
         approvedDiv.innerHTML += `
           <div class="card">
             <strong>${d.name}</strong> - ${d.city}<br>
