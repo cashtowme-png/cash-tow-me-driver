@@ -52,14 +52,14 @@
 
 <script>
 
-function addDriver() {
-  const name = document.getElementById("name").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const truck = document.getElementById("truck").value.trim();
+function toggleStatus(id, currentStatus) {
+  const newStatus = currentStatus === "ON" ? "OFF" : "ON";
 
-  if (!name || !city || !truck) {
-    alert("Fill all fields");
-    return;
+  db.collection("drivers").doc(id).update({
+    status: newStatus
+  }).then(loadDrivers);
+}
+
   }
 
   db.collection("drivers").add({
