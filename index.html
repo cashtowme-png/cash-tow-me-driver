@@ -55,20 +55,7 @@
 </div>
 
 
-function approveDriver(id) {
-  alert("Approve clicked for " + id);
 
-  db.collection("drivers").doc(id).update({
-    approved: true
-  })
-  .then(() => {
-    alert("Updated successfully");
-  })
-  .catch((error) => {
-    alert("Error: " + error.message);
-    console.error(error);
-  });
-}
 
 
 <script>
