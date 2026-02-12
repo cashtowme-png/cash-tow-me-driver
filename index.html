@@ -198,7 +198,8 @@ function loadRequests() {
       container.innerHTML += `
         <div class="card">
           Status: ${r.status}<br>
-          <button onclick="acceptRequest('${doc.id}')">Accept</button>
+         <button onclick="acceptRequest('${doc.id}', '${doc.id}')">
+
           <button onclick="completeRequest('${doc.id}')">Complete</button>
         </div>
       `;
