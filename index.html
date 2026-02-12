@@ -55,11 +55,21 @@
 </div>
 
 
-<h3>Approved Drivers</h3>
-<div id="approved"></div>
+function approveDriver(id) {
+  alert("Approve clicked for " + id);
 
-<h3>Pending Drivers</h3>
-<div id="pending"></div>
+  db.collection("drivers").doc(id).update({
+    approved: true
+  })
+  .then(() => {
+    alert("Updated successfully");
+  })
+  .catch((error) => {
+    alert("Error: " + error.message);
+    console.error(error);
+  });
+}
+
 
 <script>
 function addDriver() {
