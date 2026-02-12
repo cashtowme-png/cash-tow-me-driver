@@ -76,60 +76,54 @@ function addDriver() {
   }
 
   db.collection("drivers").add({
-    name: name,
-    city: city,
-    truck: truck,
+    name,
+    city,
+    truck,
     approved: false,
     status: "OFF",
     createdAt: Date.now()
   })
-  .then(() => {
-    alert("Driver submitted for approval!");
-  })
-  .catch(error => {
-    alert("Error: " + error.message);
-  });
-
+  .then(() => alert("Driver submitted for approval!"))
+  .catch(error => alert("Error: " + error.message));
 }
 
 
+function loadAllDrivers() {
 
-
-
-  const approvedDiv = document.getElementById("approved");
-  const pendingDiv = document.getElementById("pending");
+  const container = document.getElementById("allDrivers");
 
   db.collection("drivers").onSnapshot(snapshot => {
 
-    approvedDiv.innerHTML = "";
-    pendingDiv.innerHTML = "";
+    container.innerHTML = "";
 
     snapshot.forEach(doc => {
+
       const d = doc.data();
 
-     if (d.approved) {
+      container.innerHTML += `
+        <div class="card">
+          <strong>${d.name}</strong><br>
+          City: ${d.city}<br>
+          Truck: ${d.truck}<br>
+          Approved: ${d.approved ? "YES" : "NO"}<br>
+          Status: ${d.status}<br>
 
+          <button onclick="approveDriver('${doc.id}')">
+            ${d.approved ? "Approved" : "Approve"}
+          </button>
 
-        approvedDiv.innerHTML += `
-          <div class="card">
-            <strong>${d.name}</strong> - ${d.city}<br>
-            Status: <strong>${d.status}</strong><br>
+          ${d.approved ? `
             <button onclick="toggleStatus('${doc.id}', '${d.status}')">
               Turn ${d.status === "ON" ? "OFF" : "ON"}
             </button>
-          </div>
-        `;
+          ` : ""}
 
-      } else {
+          <button onclick="deleteDriver('${doc.id}')">
+            Delete
+          </button>
+        </div>
+      `;
 
-        pendingDiv.innerHTML += `
-          <div class="card">
-            ${d.name}
-            <button onclick="approveDriver('${doc.id}')">Approve</button>
-          </div>
-        `;
-
-      }
     });
 
   });
@@ -137,9 +131,7 @@ function addDriver() {
 }
 
 
-loadAllDrivers();
-loadRequests();
-
+function loadRequests() {
 
   const container = document.getElementById("requestsList");
 
@@ -177,50 +169,13 @@ loadRequests();
     });
 
 }
+
+
 function completeRequest(id) {
   db.collection("requests").doc(id).update({
     status: "completed"
   });
 }
-
-  const container = document.getElementById("allDrivers");
-
-  db.collection("drivers").onSnapshot(snapshot => {
-
-    container.innerHTML = "";
-
-    snapshot.forEach(doc => {
-
-      const d = doc.data();
-
-      container.innerHTML += `
-        <div class="card">
-          <strong>${d.name}</strong><br>
-          City: ${d.city}<br>
-          Truck: ${d.truck}<br>
-          Approved: ${d.approved ? "YES" : "NO"}<br>
-          Status: ${d.status}<br>
-
-          <button onclick="approveDriver('${doc.id}')">
-            ${d.approved ? "Approved" : "Approve"}
-          </button>
-
-          ${d.approved ? `
-            <button onclick="toggleStatus('${doc.id}', '${d.status}')">
-              Turn ${d.status === "ON" ? "OFF" : "ON"}
-            </button>
-          ` : ""}
-
-          <button onclick="deleteDriver('${doc.id}')">Delete</button>
-        </div>
-      `;
-
-    });
-
-  });
-
-}
-
 
 
 function approveDriver(id) {
@@ -241,18 +196,13 @@ function toggleStatus(id, currentStatus) {
 
     navigator.geolocation.getCurrentPosition(position => {
 
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-
       db.collection("drivers").doc(id).update({
         status: "ON",
-        latitude: lat,
-        longitude: lng,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
         lastUpdated: Date.now()
       });
 
-    }, error => {
-      alert("Location permission required to go online.");
     });
 
   } else {
@@ -276,11 +226,13 @@ function openAdmin() {
   if (password === "admin123") {
     document.getElementById("adminSection").style.display = "block";
     loadAllDrivers();
+    loadRequests();
   } else {
     alert("Wrong password");
   }
 
 }
+
 
 
 loadDrivers();
