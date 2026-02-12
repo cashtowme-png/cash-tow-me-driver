@@ -51,40 +51,15 @@
 
 <script>
 
-function addDriver() {
-  const name = document.getElementById("name").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const truck = document.getElementById("truck").value.trim();
-
-  if (!name || !city || !truck) {
-    alert("Fill all fields");
-    return;
-  }
-
-  db.collection("drivers").add({
-    name,
-    city,
-    truck,
-    status: "OFF",
-    approved: false,
-    createdAt: Date.now()
-  }).then(() => {
-    alert("Driver submitted for approval");
-    document.getElementById("name").value = "";
-    document.getElementById("city").value = "";
-    document.getElementById("truck").value = "";
-    loadDrivers();
-  });
-}
-
 function loadDrivers() {
   const approvedDiv = document.getElementById("approved");
   const pendingDiv = document.getElementById("pending");
 
-  approvedDiv.innerHTML = "";
-  pendingDiv.innerHTML = "";
+  db.collection("drivers").onSnapshot(snapshot => {
 
-  db.collection("drivers").get().then(snapshot => {
+    approvedDiv.innerHTML = "";
+    pendingDiv.innerHTML = "";
+
     snapshot.forEach(doc => {
       const d = doc.data();
 
@@ -107,8 +82,10 @@ function loadDrivers() {
         `;
       }
     });
+
   });
 }
+
 
 function approveDriver(id) {
   db.collection("drivers").doc(id).update({
