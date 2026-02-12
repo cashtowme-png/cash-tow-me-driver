@@ -44,7 +44,14 @@
 <button onclick="addDriver()">Add Driver</button>
 
 <br><br>
-<button onclick="openAdmin()">Admin Panel</button>
+<div id="adminSection" style="display:none; margin-top:20px;">
+  <h2>🛠 Admin Dashboard</h2>
+
+  <h3>All Drivers</h3>
+  <div id="allDrivers"></div>
+
+</div>
+
 
 <h3>Approved Drivers</h3>
 <div id="approved"></div>
@@ -81,7 +88,38 @@ function addDriver() {
 
 }
 
+<script>
+
+function addDriver() {
+
+  const name = document.getElementById("name").value;
+  const city = document.getElementById("city").value;
+  const truck = document.getElementById("truck").value;
+
+  if (!name || !city || !truck) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  db.collection("drivers").add({
+    name: name,
+    city: city,
+    truck: truck,
+    approved: false,
+    status: "OFF",
+    createdAt: Date.now()
+  })
+  .then(() => {
+    alert("Driver submitted for approval!");
+  })
+  .catch(error => {
+    alert("Error: " + error.message);
+  });
+}
+
+
 function loadDrivers() {
+
   const approvedDiv = document.getElementById("approved");
   const pendingDiv = document.getElementById("pending");
 
@@ -93,7 +131,7 @@ function loadDrivers() {
     snapshot.forEach(doc => {
       const d = doc.data();
 
-     if (d.approved && d.status === "ON") {
+      if (d.approved && d.status === "ON") {
 
         approvedDiv.innerHTML += `
           <div class="card">
@@ -104,31 +142,72 @@ function loadDrivers() {
             </button>
           </div>
         `;
+
       } else {
+
         pendingDiv.innerHTML += `
           <div class="card">
             ${d.name}
             <button onclick="approveDriver('${doc.id}')">Approve</button>
           </div>
         `;
+
       }
     });
 
   });
+
+}
+
+
+function loadAllDrivers() {
+
+  const container = document.getElementById("allDrivers");
+
+  db.collection("drivers").onSnapshot(snapshot => {
+
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+
+      const d = doc.data();
+
+      container.innerHTML += `
+        <div class="card">
+          <strong>${d.name}</strong><br>
+          City: ${d.city}<br>
+          Truck: ${d.truck}<br>
+          Approved: ${d.approved ? "YES" : "NO"}<br>
+          Status: ${d.status}<br>
+          ${d.latitude ? `Lat: ${d.latitude}<br>Lng: ${d.longitude}<br>` : ""}
+          <button onclick="approveDriver('${doc.id}')">Approve</button>
+          <button onclick="deleteDriver('${doc.id}')">Delete</button>
+        </div>
+      `;
+
+    });
+
+  });
+
 }
 
 
 function approveDriver(id) {
   db.collection("drivers").doc(id).update({
     approved: true
-  }).then(loadDrivers);
+  });
 }
+
+
+function deleteDriver(id) {
+  db.collection("drivers").doc(id).delete();
+}
+
 
 function toggleStatus(id, currentStatus) {
 
   if (currentStatus === "OFF") {
 
-    // Driver going ONLINE → get GPS
     navigator.geolocation.getCurrentPosition(position => {
 
       const lat = position.coords.latitude;
@@ -147,7 +226,6 @@ function toggleStatus(id, currentStatus) {
 
   } else {
 
-    // Driver going OFFLINE
     db.collection("drivers").doc(id).update({
       status: "OFF",
       latitude: null,
@@ -156,20 +234,24 @@ function toggleStatus(id, currentStatus) {
     });
 
   }
+
 }
 
 
 function openAdmin() {
-  if (prompt("Admin password") === "admin123") {
-    loadDrivers();
+
+  const password = prompt("Enter Admin Password");
+
+  if (password === "admin123") {
+    document.getElementById("adminSection").style.display = "block";
+    loadAllDrivers();
   } else {
     alert("Wrong password");
   }
+
 }
+
 
 loadDrivers();
 
 </script>
-
-</body>
-</html>
