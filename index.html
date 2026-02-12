@@ -137,12 +137,25 @@ function toggleStatus(id, currentStatus) {
   }
 }
 
-function acceptRequest(requestId) {
-  db.collection("requests").doc(requestId).update({
-    status: "assigned",
-    assignedAt: Date.now()
+function acceptRequest(requestId, driverId) {
+
+  navigator.geolocation.getCurrentPosition(position => {
+
+    const driverLat = position.coords.latitude;
+    const driverLng = position.coords.longitude;
+
+    db.collection("requests").doc(requestId).update({
+      status: "assigned",
+      assignedTo: driverId,
+      driverLatitude: driverLat,
+      driverLongitude: driverLng,
+      acceptedAt: Date.now()
+    });
+
   });
+
 }
+
 
 function completeRequest(id) {
   db.collection("requests").doc(id).update({
