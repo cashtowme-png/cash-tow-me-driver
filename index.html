@@ -164,8 +164,17 @@ function loadAllDrivers() {
           Truck: ${d.truck}<br>
           Approved: ${d.approved ? "YES" : "NO"}<br>
           Status: ${d.status}<br>
-          ${d.latitude ? `Lat: ${d.latitude}<br>Lng: ${d.longitude}<br>` : ""}
-          <button onclick="approveDriver('${doc.id}')">Approve</button>
+
+          <button onclick="approveDriver('${doc.id}')">
+            ${d.approved ? "Approved" : "Approve"}
+          </button>
+
+          ${d.approved ? `
+            <button onclick="toggleStatus('${doc.id}', '${d.status}')">
+              Turn ${d.status === "ON" ? "OFF" : "ON"}
+            </button>
+          ` : ""}
+
           <button onclick="deleteDriver('${doc.id}')">Delete</button>
         </div>
       `;
@@ -175,6 +184,7 @@ function loadAllDrivers() {
   });
 
 }
+
 
 
 function approveDriver(id) {
