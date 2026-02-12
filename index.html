@@ -90,18 +90,16 @@ function loadDrivers() {
       const d = doc.data();
 
       if (d.approved) {
-        approvedDiv.innerHTML += `
-          <div class="card">
-            <strong>${d.name}</strong> - ${d.city}
-          </div>
-        `;
-      } else {
-        pendingDiv.innerHTML += `
-          <div class="card">
-            ${d.name}
-            <button onclick="approveDriver('${doc.id}')">Approve</button>
-          </div>
-        `;
+    approvedDiv.innerHTML += `
+  <div class="card">
+    <strong>${d.name}</strong> - ${d.city}<br>
+    Status: <strong>${d.status}</strong><br>
+    <button onclick="toggleStatus('${doc.id}', '${d.status}')">
+      Turn ${d.status === "ON" ? "OFF" : "ON"}
+    </button>
+  </div>
+`;
+
       }
     });
   });
