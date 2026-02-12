@@ -95,12 +95,39 @@ function approveDriver(id) {
 }
 
 function toggleStatus(id, currentStatus) {
-  const newStatus = currentStatus === "ON" ? "OFF" : "ON";
 
-  db.collection("drivers").doc(id).update({
-    status: newStatus
-  }).then(loadDrivers);
+  if (currentStatus === "OFF") {
+
+    // Driver going ONLINE → get GPS
+    navigator.geolocation.getCurrentPosition(position => {
+
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      db.collection("drivers").doc(id).update({
+        status: "ON",
+        latitude: lat,
+        longitude: lng,
+        lastUpdated: Date.now()
+      });
+
+    }, error => {
+      alert("Location permission required to go online.");
+    });
+
+  } else {
+
+    // Driver going OFFLINE
+    db.collection("drivers").doc(id).update({
+      status: "OFF",
+      latitude: null,
+      longitude: null,
+      lastUpdated: Date.now()
+    });
+
+  }
 }
+
 
 function openAdmin() {
   if (prompt("Admin password") === "admin123") {
