@@ -115,17 +115,19 @@ function addDriver() {
     return;
   }
 
-  db.collection("drivers").add({
-    name,
-    company,
-    phone,
-    city,
-    truck,
-    services,
-    approved: false,
-    status: "OFF",
-    createdAt: Date.now()
-  });
+ db.collection("drivers").add({
+  name,
+  company,
+  phone,
+  city,
+  truck,
+  services,
+  approved: false,
+  status: "OFF",
+  subscription: "NONE",   // 🔥 NEW
+  createdAt: Date.now()
+});
+
 
   alert("Driver Added");
 }
@@ -140,54 +142,37 @@ function openAdmin() {
   }
 }
 
-function loadDrivers() {
-  const container = document.getElementById("allDrivers");
+container.innerHTML += `
+  <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
+    
+    <strong>${d.company}</strong><br>
+    Driver: ${d.name}<br>
+    Status: <b>${d.status}</b><br>
+    Services: ${d.services}<br><br>
 
-  db.collection("drivers").onSnapshot(snapshot => {
-    container.innerHTML = "";
+    <button onclick="toggleStatus('${doc.id}', '${d.status}')">
+      ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
+    </button>
 
-    snapshot.forEach(doc => {
-      const d = doc.data();
+    <br><br>
 
-      container.innerHTML += `
-        <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
-          <strong>${d.company}</strong><br>
-          Driver: ${d.name}<br>
-          Status: ${d.status}<br>
-          Services: ${d.services}<br><br>
+    <button onclick="payDaily('${doc.id}')">$5 Daily</button>
+    <button onclick="payMonthly('${doc.id}')">$30 Monthly</button>
 
-          <button onclick="toggleStatus('${doc.id}', '${d.status}')">
-            ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
-          </button>
-        </div>
-      `;
-    });
+  </div>
+`;
+function payDaily(id) {
+  db.collection("drivers").doc(id).update({
+    subscription: "DAILY"
   });
+  alert("Daily Plan Activated");
 }
-function toggleStatus(id, currentStatus) {
 
-  if (currentStatus === "OFF") {
-
-    navigator.geolocation.getCurrentPosition(position => {
-
-      db.collection("drivers").doc(id).update({
-        status: "ON",
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        lastUpdated: Date.now()
-      });
-
-    });
-
-  } else {
-
-    db.collection("drivers").doc(id).update({
-      status: "OFF",
-      latitude: null,
-      longitude: null
-    });
-
-  }
-
+function payMonthly(id) {
+  db.collection("drivers").doc(id).update({
+    subscription: "MONTHLY"
+  });
+  alert("Monthly Plan Activated");
 }
+
 loadDrivers();
