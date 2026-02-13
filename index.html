@@ -150,22 +150,44 @@ function loadDrivers() {
       const d = doc.data();
 
       container.innerHTML += `
-        <div style="margin-bottom:20px;">
+        <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
           <strong>${d.company}</strong><br>
           Driver: ${d.name}<br>
           Status: ${d.status}<br>
-          Services: ${d.services}<br>
+          Services: ${d.services}<br><br>
+
+          <button onclick="toggleStatus('${doc.id}', '${d.status}')">
+            ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
+          </button>
         </div>
       `;
     });
   });
 }
+function toggleStatus(id, currentStatus) {
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
+  if (currentStatus === "OFF") {
+
+    navigator.geolocation.getCurrentPosition(position => {
+
+      db.collection("drivers").doc(id).update({
+        status: "ON",
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        lastUpdated: Date.now()
+      });
+
+    });
+
+  } else {
+
+    db.collection("drivers").doc(id).update({
+      status: "OFF",
+      latitude: null,
+      longitude: null
+    });
+
+  }
+
 }
-
-</script>
-
-</body>
-</html>
+loadDrivers();
