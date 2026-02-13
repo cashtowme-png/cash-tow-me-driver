@@ -90,6 +90,8 @@ button {
 
 <script>
 
+<script>
+
 const firebaseConfig = {
   apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
   authDomain: "cash-dispatch.firebaseapp.com",
@@ -160,59 +162,46 @@ function toggleStatus(id, currentStatus) {
   }
 }
 
-function payDaily(id) {
-  db.collection("drivers").doc(id).update({
-    subscription: "DAILY"
-  });
-  alert("Daily Plan Activated");
-}
-
-function payMonthly(id) {
-  db.collection("drivers").doc(id).update({
-    subscription: "MONTHLY"
-  });
-  alert("Monthly Plan Activated");
-}
-
 function loadDrivers() {
   const container = document.getElementById("allDrivers");
 
   db.collection("drivers").onSnapshot(snapshot => {
     container.innerHTML = "";
 
-   snapshot.forEach(doc => {
-  const d = doc.data();
+    snapshot.forEach(doc => {
+      const d = doc.data();
 
-  // IF NOT APPROVED
-  if (!d.approved) {
-    container.innerHTML += `
-      <div style="margin-bottom:20px; padding:15px; background:#330000; border-radius:12px;">
-        <strong>${d.company}</strong><br>
-        Driver: ${d.name}<br>
-        Status: PENDING APPROVAL<br><br>
+      if (!d.approved) {
+        container.innerHTML += `
+          <div style="margin-bottom:20px; padding:15px; background:#330000; border-radius:12px;">
+            <strong>${d.company}</strong><br>
+            Driver: ${d.name}<br>
+            Status: PENDING APPROVAL<br><br>
 
-        <button onclick="approveDriver('${doc.id}')">
-          ✅ Approve & Charge
-        </button>
-      </div>
-    `;
-    return;
-  }
+            <button onclick="approveDriver('${doc.id}')">
+              ✅ Approve & Charge
+            </button>
+          </div>
+        `;
+      } else {
+        container.innerHTML += `
+          <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
+            <strong>${d.company}</strong><br>
+            Driver: ${d.name}<br>
+            Status: ${d.status}<br>
+            Subscription: ${d.subscription}<br><br>
 
-  // IF APPROVED
-  container.innerHTML += `
-    <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
-      <strong>${d.company}</strong><br>
-      Driver: ${d.name}<br>
-      Status: ${d.status}<br>
-      Subscription: ${d.subscription}<br><br>
+            <button onclick="toggleStatus('${doc.id}', '${d.status}')">
+              ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
+            </button>
+          </div>
+        `;
+      }
+    });
 
-      <button onclick="toggleStatus('${doc.id}', '${d.status}')">
-        ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
-      </button>
-    </div>
-  `;
-});
+  });
+}
+
 function approveDriver(id) {
   const plan = prompt("Type DAILY or MONTHLY");
 
@@ -226,7 +215,6 @@ function approveDriver(id) {
     alert("Invalid plan");
   }
 }
-
 
 </script>
 
