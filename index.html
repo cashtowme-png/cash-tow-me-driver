@@ -150,6 +150,98 @@ function loadDrivers() {
     snapshot.forEach(doc => {
       const d = doc.data();
 
+      const firebaseConfig = {
+  apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
+  authDomain: "cash-dispatch.firebaseapp.com",
+  projectId: "cash-dispatch",
+  storageBucket: "cash-dispatch.appspot.com",
+  messagingSenderId: "79166345159",
+  appId: "1:79166345159:web:c763c3d806d2fc24db53e2"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+function addDriver() {
+  const name = document.getElementById("name").value;
+  const company = document.getElementById("company").value;
+  const phone = document.getElementById("phone").value;
+  const city = document.getElementById("city").value;
+  const truck = document.getElementById("truck").value;
+  const services = document.getElementById("services").value;
+
+  if (!name || !company || !phone || !city || !truck || !services) {
+    alert("Fill all fields");
+    return;
+  }
+
+  db.collection("drivers").add({
+    name,
+    company,
+    phone,
+    city,
+    truck,
+    services,
+    approved: false,
+    status: "OFF",
+    subscription: "NONE",
+    createdAt: Date.now()
+  });
+
+  alert("Driver Added");
+}
+
+function openAdmin() {
+  const password = prompt("Enter Admin Password");
+  if (password === "admin123") {
+    document.getElementById("adminSection").style.display = "block";
+  } else {
+    alert("Wrong password");
+  }
+}
+
+function toggleStatus(id, currentStatus) {
+  if (currentStatus === "OFF") {
+    navigator.geolocation.getCurrentPosition(position => {
+      db.collection("drivers").doc(id).update({
+        status: "ON",
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        lastUpdated: Date.now()
+      });
+    });
+  } else {
+    db.collection("drivers").doc(id).update({
+      status: "OFF",
+      latitude: null,
+      longitude: null
+    });
+  }
+}
+
+function payDaily(id) {
+  db.collection("drivers").doc(id).update({
+    subscription: "DAILY"
+  });
+  alert("Daily Plan Activated");
+}
+
+function payMonthly(id) {
+  db.collection("drivers").doc(id).update({
+    subscription: "MONTHLY"
+  });
+  alert("Monthly Plan Activated");
+}
+
+function loadDrivers() {
+  const container = document.getElementById("allDrivers");
+
+  db.collection("drivers").onSnapshot(snapshot => {
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
       container.innerHTML += `
         <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
           <strong>${d.company}</strong><br>
@@ -172,87 +264,6 @@ function loadDrivers() {
   });
 }
 
-function toggleStatus(id, currentStatus) {
-  if (currentStatus === "OFF") {
-    navigator.geolocation.getCurrentPosition(position => {
-      db.collection("drivers").doc(id).update({
-        status: "ON",
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        lastUpdated: Date.now()
-      });
-    });
-  } else {
-    db.collection("drivers").doc(id).update({
-      status: "OFF",
-      latitude: null,
-      longitude: null
-    });
-  }
-}
-
-function payMonthly(id) {
-  db.collection("drivers").doc(id).update({
-    subscription: "MONTHLY"
-  });
-  alert("Monthly Plan Activated");
-}
-
-function payDaily(id) {
-  db.collection("drivers").doc(id).update({
-    subscription: "DAILY"
-  });
-  alert("Daily Plan Activated");
-}
-
-function toggleStatus(id, currentStatus) {
-  if (currentStatus === "OFF") {
-    navigator.geolocation.getCurrentPosition(position => {
-      db.collection("drivers").doc(id).update({
-        status: "ON",
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        lastUpdated: Date.now()
-      });
-    });
-  } else {
-    db.collection("drivers").doc(id).update({
-      status: "OFF",
-      latitude: null,
-      longitude: null
-    });
-  }
-}
-
-function loadDrivers() {
-  const container = document.getElementById("allDrivers");
-
-  db.collection("drivers").onSnapshot(snapshot => {
-    container.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const d = doc.data();
-
-      container.innerHTML += `
-        <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
-          <strong>${d.company}</strong><br>
-          Driver: ${d.name}<br>
-          Status: ${d.status}<br>
-          Subscription: ${d.subscription}<br><br>
-
-          <button onclick="toggleStatus('${doc.id}', '${d.status}')">
-            ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
-          </button>
-
-          <br><br>
-
-          <button onclick="payDaily('${doc.id}')">$5 Daily</button>
-          <button onclick="payMonthly('${doc.id}')">$30 Monthly</button>
-        </div>
-      `;
-    });
-  });
-}
-
 /* 
 loadDrivers();
+
