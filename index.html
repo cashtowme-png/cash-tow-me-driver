@@ -1,89 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Cash Tow Me – Driver</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8">
+<title>Cash Tow Me – Driver</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- Firebase -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
-    authDomain: "cash-dispatch.firebaseapp.com",
-    projectId: "cash-dispatch",
-    storageBucket: "cash-dispatch.firebasestorage.app",
-    messagingSenderId: "79166345159",
-    appId: "1:79166345159:web:c763c3d806d2fc24db53e2"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-</script>
-
-
-
-
-  <style>
+<style>
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #111;
-  color: white;
+  margin:0;
+  padding:0;
+  background:#111;
+  color:white;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
 .card {
-  background: #1c1c1e;
-  padding: 20px;
-  border-radius: 20px;
-  margin: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  background:#1c1c1e;
+  padding:20px;
+  margin:20px;
+  border-radius:18px;
 }
 
-h1 {
-  margin-top: 0;
+input {
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:12px;
+  border:none;
 }
 
-.btn-main {
-  background: #ff3b30;
-  color: white;
-  padding: 18px;
-  font-size: 18px;
-  border: none;
-  border-radius: 14px;
-  width: 100%;
-  font-weight: bold;
-}
-
-.driver-card {
-  background: #1c1c1e;
-  border-radius: 16px;
-  padding: 15px;
-  margin: 15px;
-  text-align: left;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
-}
-
-.call-btn {
-  background:#34c759;
+button {
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:14px;
+  background:#ff3b30;
   color:white;
-  padding:10px 15px;
-  border-radius:10px;
-  text-decoration:none;
-  display:inline-block;
-  margin-top:10px;
+  font-weight:bold;
+  margin-top:8px;
 }
 </style>
-
 </head>
 
 <body>
 
+<div class="card">
 <h2>🚛 Cash Tow Me – Driver</h2>
 
 <input id="name" placeholder="Driver Name">
@@ -91,30 +58,33 @@ h1 {
 <input id="phone" placeholder="Phone Number">
 <input id="city" placeholder="City">
 <input id="truck" placeholder="Truck Type">
-Add service types (Flatbed, Winch, etc.)
+<input id="services" placeholder="Services (Flatbed, Winch, Lockout)">
+
 <button onclick="addDriver()">Add Driver</button>
 <button onclick="openAdmin()">Admin Panel</button>
+</div>
 
-<br><br>
-
-<div id="adminSection" style="display:none; margin-top:20px;">
-  <h2>🛠 Admin Dashboard</h2>
-
-  <h3>🚨 Incoming Tow Requests</h3>
-  <div id="requestsList"></div>
-
-  <hr>
-
-  <h3>🚛 All Drivers</h3>
-  <div id="allDrivers"></div>
+<div id="adminSection" style="display:none">
+<div class="card">
+<h3>All Drivers</h3>
+<div id="allDrivers"></div>
+</div>
 </div>
 
 <script>
+const firebaseConfig = {
+  apiKey: "YOUR KEY",
+  authDomain: "cash-dispatch.firebaseapp.com",
+  projectId: "cash-dispatch",
+  storageBucket: "cash-dispatch.appspot.com",
+  messagingSenderId: "79166345159",
+  appId: "1:79166345159:web:c763c3d806d2fc24db53e2"
+};
 
-<script>
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
 function addDriver() {
-
   const name = document.getElementById("name").value;
   const company = document.getElementById("company").value;
   const phone = document.getElementById("phone").value;
@@ -123,7 +93,7 @@ function addDriver() {
   const services = document.getElementById("services").value;
 
   if (!name || !company || !phone || !city || !truck || !services) {
-    alert("Please fill all fields");
+    alert("Fill all fields");
     return;
   }
 
@@ -133,92 +103,50 @@ function addDriver() {
     phone,
     city,
     truck,
-    services,   // 🔥 THIS IS NEW
+    services,
     approved: false,
     status: "OFF",
     createdAt: Date.now()
   });
 
-}
-
-
-
-function approveDriver(id) {
-  db.collection("drivers").doc(id).update({ approved: true });
-}
-
-function toggleStatus(id, currentStatus) {
-
-  if (currentStatus === "OFF") {
-
-    navigator.geolocation.getCurrentPosition(position => {
-
-      db.collection("drivers").doc(id).update({
-        status: "ON",
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        lastUpdated: Date.now()
-      });
-
-    });
-
-  } else {
-
-    db.collection("drivers").doc(id).update({
-      status: "OFF",
-      latitude: null,
-      longitude: null
-    });
-
-  }
-
-}
-
-function deleteDriver(id) {
-  db.collection("drivers").doc(id).delete();
+  alert("Driver Added");
 }
 
 function openAdmin() {
-
   const password = prompt("Enter Admin Password");
-
   if (password === "admin123") {
     document.getElementById("adminSection").style.display = "block";
+    loadDrivers();
   } else {
     alert("Wrong password");
   }
-
 }
 
-function loadAllDrivers() {
-
+function loadDrivers() {
   const container = document.getElementById("allDrivers");
 
   db.collection("drivers").onSnapshot(snapshot => {
-
     container.innerHTML = "";
 
     snapshot.forEach(doc => {
-
       const d = doc.data();
 
       container.innerHTML += `
-        <div class="card">
+        <div style="margin-bottom:15px;">
           <strong>${d.company}</strong><br>
           Driver: ${d.name}<br>
           Status: ${d.status}<br>
-          <button onclick="approveDriver('${doc.id}')">Approve</button>
-          <button onclick="toggleStatus('${doc.id}','${d.status}')">Toggle</button>
-          <button onclick="deleteDriver('${doc.id}')">Delete</button>
+          Services: ${d.services}<br>
         </div>
       `;
-
     });
-
   });
-
 }
 
-loadAllDrivers();
-
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
 </script>
+
+</body>
+</html>
