@@ -47,7 +47,16 @@
 <button onclick="addDriver()">Add Driver</button>
 
 
-<button onclick="openAdmin()">Admin Panel</button>
+function openAdmin() {
+
+  alert("Admin clicked");
+
+  if (prompt("Enter Admin Password") === "admin123") {
+    document.getElementById("adminSection").style.display = "block";
+  }
+
+}
+
 
 <br><br>
 <div id="adminSection" style="display:none; margin-top:20px;">
@@ -95,7 +104,8 @@ db.collection("drivers").add({
   approved: false,
   status: "OFF",
   createdAt: Date.now()
-});
+});}
+
 
 
 function approveDriver(id) {
@@ -195,12 +205,125 @@ function loadRequests() {
   });
 }
 
-function openAdmin() {
-  alert("Admin clicked");
+<script>
+
+function addDriver() {
+
+  const name = document.getElementById("name").value;
+  const company = document.getElementById("company").value;
+  const phone = document.getElementById("phone").value;
+  const city = document.getElementById("city").value;
+  const truck = document.getElementById("truck").value;
+
+  if (!name || !company || !phone || !city || !truck) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  db.collection("drivers").add({
+    name,
+    company,
+    phone,
+    city,
+    truck,
+    approved: false,
+    status: "OFF",
+    createdAt: Date.now()
+  });
+
 }
 
-  if (prompt("Enter Admin Password") === "admin123") {
+function approveDriver(id) {
+  db.collection("drivers").doc(id).update({ approved: true });
+}
+
+function deleteDriver(id) {
+  db.collection("drivers").doc(id).delete();
+}
+
+function toggleStatus(id, currentStatus) {
+  if (currentStatus === "OFF") {
+    navigator.geolocation.getCurrentPosition(position => {
+      db.collection("drivers").doc(id).update({
+        status: "ON",
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        lastUpdated: Date.now()
+      });
+    });
+  } else {
+    db.collection("drivers").doc(id).update({
+      status: "OFF",
+      latitude: null,
+      longitude: null
+    });
+  }
+}
+
+function acceptRequest(requestId, driverId) {
+  db.collection("requests").doc(requestId).update({
+    status: "assigned",
+    assignedTo: driverId,
+    acceptedAt: Date.now()
+  });
+}
+
+function completeRequest(id) {
+  db.collection("requests").doc(id).update({
+    status: "completed"
+  });
+}
+
+function loadAllDrivers() {
+  const container = document.getElementById("allDrivers");
+
+  db.collection("drivers").onSnapshot(snapshot => {
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
+      container.innerHTML += `
+        <div class="card">
+          <strong>${d.company}</strong><br>
+          Driver: ${d.name}<br>
+          Approved: ${d.approved}<br>
+          Status: ${d.status}<br>
+          <button onclick="approveDriver('${doc.id}')">Approve</button>
+          <button onclick="toggleStatus('${doc.id}','${d.status}')">Toggle</button>
+          <button onclick="deleteDriver('${doc.id}')">Delete</button>
+        </div>
+      `;
+    });
+  });
+}
+
+function loadRequests() {
+  const container = document.getElementById("requestsList");
+
+  db.collection("requests").onSnapshot(snapshot => {
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const r = doc.data();
+
+      container.innerHTML += `
+        <div class="card">
+          Status: ${r.status}<br>
+          <button onclick="acceptRequest('${doc.id}','${r.assignedTo || ""}')">Accept</button>
+          <button onclick="completeRequest('${doc.id}')">Complete</button>
+        </div>
+      `;
+    });
+  });
+}
+
+function openAdmin() {
+  const password = prompt("Enter Admin Password");
+  if (password === "admin123") {
     document.getElementById("adminSection").style.display = "block";
+  } else {
+    alert("Wrong password");
   }
 }
 
@@ -208,9 +331,3 @@ loadAllDrivers();
 loadRequests();
 
 </script>
-
-
-
-
-
-
