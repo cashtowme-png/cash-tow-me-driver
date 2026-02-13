@@ -40,25 +40,15 @@
 
 <input id="name" placeholder="Driver Name">
 <input id="company" placeholder="Company Name">
-  <input id="phone" placeholder="Phone Number">
-
+<input id="phone" placeholder="Phone Number">
 <input id="city" placeholder="City">
 <input id="truck" placeholder="Truck Type">
+
 <button onclick="addDriver()">Add Driver</button>
-
-
-function openAdmin() {
-
-  alert("Admin clicked");
-
-  if (prompt("Enter Admin Password") === "admin123") {
-    document.getElementById("adminSection").style.display = "block";
-  }
-
-}
-
+<button onclick="openAdmin()">Admin Panel</button>
 
 <br><br>
+
 <div id="adminSection" style="display:none; margin-top:20px;">
   <h2>🛠 Admin Dashboard</h2>
 
@@ -70,140 +60,6 @@ function openAdmin() {
   <h3>🚛 All Drivers</h3>
   <div id="allDrivers"></div>
 </div>
-
-
-
-
-
-
-<script>
-
-
-
-
-function addDriver() {
-
-  const name = document.getElementById("name").value;
-  const company = document.getElementById("company").value;
-  const city = document.getElementById("city").value;
-  const truck = document.getElementById("truck").value;
-
-  if (!name || !company || !city || !truck) {
-    alert("Please fill all fields");
-    return;
-  }
-
-const phone = document.getElementById("phone").value;
-
-db.collection("drivers").add({
-  name,
-  company,
-  city,
-  truck,
-  phone,
-  approved: false,
-  status: "OFF",
-  createdAt: Date.now()
-});}
-
-
-
-function approveDriver(id) {
-  db.collection("drivers").doc(id).update({ approved: true });
-}
-
-function deleteDriver(id) {
-  db.collection("drivers").doc(id).delete();
-}
-
-function toggleStatus(id, currentStatus) {
-  if (currentStatus === "OFF") {
-    navigator.geolocation.getCurrentPosition(position => {
-      db.collection("drivers").doc(id).update({
-        status: "ON",
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        lastUpdated: Date.now()
-      });
-    });
-  } else {
-    db.collection("drivers").doc(id).update({
-      status: "OFF",
-      latitude: null,
-      longitude: null
-    });
-  }
-}
-
-function acceptRequest(requestId, driverId) {
-
-  navigator.geolocation.getCurrentPosition(position => {
-
-    const driverLat = position.coords.latitude;
-    const driverLng = position.coords.longitude;
-
-    db.collection("requests").doc(requestId).update({
-      status: "assigned",
-      assignedTo: driverId,
-      driverLatitude: driverLat,
-      driverLongitude: driverLng,
-      acceptedAt: Date.now()
-    });
-
-  });
-
-}
-
-
-function completeRequest(id) {
-  db.collection("requests").doc(id).update({
-    status: "completed"
-  });
-}
-
-function loadAllDrivers() {
-  const container = document.getElementById("allDrivers");
-
-  db.collection("drivers").onSnapshot(snapshot => {
-    container.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const d = doc.data();
-
-      container.innerHTML += `
-        <div class="card">
-          <strong>${d.name}</strong><br>
-          Approved: ${d.approved}<br>
-          Status: ${d.status}<br>
-          <button onclick="approveDriver('${doc.id}')">Approve</button>
-          <button onclick="toggleStatus('${doc.id}','${d.status}')">Toggle</button>
-          <button onclick="deleteDriver('${doc.id}')">Delete</button>
-        </div>
-      `;
-    });
-  });
-}
-
-function loadRequests() {
-  const container = document.getElementById("requestsList");
-
-  db.collection("requests").onSnapshot(snapshot => {
-    container.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const r = doc.data();
-
-      container.innerHTML += `
-        <div class="card">
-          Status: ${r.status}<br>
-         <button onclick="acceptRequest('${doc.id}', '${doc.id}')">
-
-          <button onclick="completeRequest('${doc.id}')">Complete</button>
-        </div>
-      `;
-    });
-  });
-}
 
 <script>
 
@@ -231,6 +87,7 @@ function addDriver() {
     createdAt: Date.now()
   });
 
+  alert("Driver added!");
 }
 
 function approveDriver(id) {
@@ -242,6 +99,7 @@ function deleteDriver(id) {
 }
 
 function toggleStatus(id, currentStatus) {
+
   if (currentStatus === "OFF") {
     navigator.geolocation.getCurrentPosition(position => {
       db.collection("drivers").doc(id).update({
@@ -260,10 +118,9 @@ function toggleStatus(id, currentStatus) {
   }
 }
 
-function acceptRequest(requestId, driverId) {
+function acceptRequest(requestId) {
   db.collection("requests").doc(requestId).update({
     status: "assigned",
-    assignedTo: driverId,
     acceptedAt: Date.now()
   });
 }
@@ -310,7 +167,7 @@ function loadRequests() {
       container.innerHTML += `
         <div class="card">
           Status: ${r.status}<br>
-          <button onclick="acceptRequest('${doc.id}','${r.assignedTo || ""}')">Accept</button>
+          <button onclick="acceptRequest('${doc.id}')">Accept</button>
           <button onclick="completeRequest('${doc.id}')">Complete</button>
         </div>
       `;
@@ -320,6 +177,7 @@ function loadRequests() {
 
 function openAdmin() {
   const password = prompt("Enter Admin Password");
+
   if (password === "admin123") {
     document.getElementById("adminSection").style.display = "block";
   } else {
@@ -331,3 +189,5 @@ loadAllDrivers();
 loadRequests();
 
 </script>
+
+</body>
