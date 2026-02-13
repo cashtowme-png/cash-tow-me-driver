@@ -40,6 +40,8 @@
 
 <input id="name" placeholder="Driver Name">
 <input id="company" placeholder="Company Name">
+  <input id="phone" placeholder="Phone Number">
+
 <input id="city" placeholder="City">
 <input id="truck" placeholder="Truck Type">
 <button onclick="addDriver()">Add Driver</button>
@@ -82,17 +84,19 @@ function addDriver() {
     return;
   }
 
-  db.collection("drivers").add({
-    name,
-    company,
-    city,
-    truck,
-    approved: false,
-    status: "OFF",
-    createdAt: Date.now()
-  });
+const phone = document.getElementById("phone").value;
 
-}
+db.collection("drivers").add({
+  name,
+  company,
+  city,
+  truck,
+  phone,
+  approved: false,
+  status: "OFF",
+  createdAt: Date.now()
+});
+
 
 function approveDriver(id) {
   db.collection("drivers").doc(id).update({ approved: true });
