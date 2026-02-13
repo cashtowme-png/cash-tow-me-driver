@@ -180,29 +180,53 @@ function loadDrivers() {
   db.collection("drivers").onSnapshot(snapshot => {
     container.innerHTML = "";
 
-    snapshot.forEach(doc => {
-      const d = doc.data();
+   snapshot.forEach(doc => {
+  const d = doc.data();
 
-      container.innerHTML += `
-        <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
-          <strong>${d.company}</strong><br>
-          Driver: ${d.name}<br>
-          Status: ${d.status}<br>
-          Subscription: ${d.subscription}<br><br>
+  // IF NOT APPROVED
+  if (!d.approved) {
+    container.innerHTML += `
+      <div style="margin-bottom:20px; padding:15px; background:#330000; border-radius:12px;">
+        <strong>${d.company}</strong><br>
+        Driver: ${d.name}<br>
+        Status: PENDING APPROVAL<br><br>
 
-          <button onclick="toggleStatus('${doc.id}', '${d.status}')">
-            ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
-          </button>
+        <button onclick="approveDriver('${doc.id}')">
+          ✅ Approve & Charge
+        </button>
+      </div>
+    `;
+    return;
+  }
 
-          <br><br>
+  // IF APPROVED
+  container.innerHTML += `
+    <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
+      <strong>${d.company}</strong><br>
+      Driver: ${d.name}<br>
+      Status: ${d.status}<br>
+      Subscription: ${d.subscription}<br><br>
 
-          <button onclick="payDaily('${doc.id}')">$5 Daily</button>
-          <button onclick="payMonthly('${doc.id}')">$30 Monthly</button>
-        </div>
-      `;
-    });
-  });
+      <button onclick="toggleStatus('${doc.id}', '${d.status}')">
+        ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
+      </button>
+    </div>
+  `;
+});
+function approveDriver(id) {
+  const plan = prompt("Type DAILY or MONTHLY");
+
+  if (!plan) return;
+
+  if (plan.toUpperCase() === "DAILY") {
+    window.location.href = "https://buy.stripe.com/test_3cI28l3cg4ldgBw6CE5sA00";
+  } else if (plan.toUpperCase() === "MONTHLY") {
+    window.location.href = "https://buy.stripe.com/test_fZu6oB5ko9Fxdpk9OQ5sA01";
+  } else {
+    alert("Invalid plan");
+  }
 }
+
 
 </script>
 
