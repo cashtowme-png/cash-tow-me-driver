@@ -8,23 +8,64 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<div class="header">
-🚛 Cash Tow Me
-</div>
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0f172a;
+  color: white;
+}
 
-<div class="subtext">
-Fast roadside assistance near you. Call or text a company instantly.
-</div>
+.header {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  padding: 25px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+}
 
+.card {
+  background: #1e293b;
+  margin: 20px;
+  padding: 20px;
+  border-radius: 20px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  border: none;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  margin-top: 10px;
+  background: #22c55e;
+  color: white;
+  font-weight: bold;
+}
+</style>
 </head>
 
 <body>
 
+<div class="header">
+🚛 Driver Dashboard
+</div>
+
 <div class="card">
-<h2>🚛 Cash Tow Me – Driver</h2>
+<h3>Add Company</h3>
 
 <input id="name" placeholder="Driver Name">
 <input id="company" placeholder="Company Name">
@@ -33,20 +74,13 @@ Fast roadside assistance near you. Call or text a company instantly.
 <input id="truck" placeholder="Truck Type">
 <input id="services" placeholder="Services (Flatbed, Winch, Lockout)">
 
-<button onclick="addDriver()">Add Driver</button>
-<button onclick="openAdmin()">Admin Panel</button>
-</div>
-
-<div id="adminSection" style="display:none">
-<div class="card">
-<h3>All Drivers</h3>
-<div id="allDrivers"></div>
-</div>
+<button onclick="addDriver()">Save Company</button>
+<button onclick="goOnline()">Go Online</button>
 </div>
 
 <script>
 const firebaseConfig = {
-  apiKey: "YOUR KEY",
+  apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
   authDomain: "cash-dispatch.firebaseapp.com",
   projectId: "cash-dispatch",
   storageBucket: "cash-dispatch.appspot.com",
@@ -56,6 +90,8 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+
+let driverId = null;
 
 function addDriver() {
   const name = document.getElementById("name").value;
@@ -77,42 +113,32 @@ function addDriver() {
     city,
     truck,
     services,
-    approved: false,
+    approved: true,
     status: "OFF",
     createdAt: Date.now()
+  }).then(docRef => {
+    driverId = docRef.id;
+    alert("Company Saved");
   });
-
-  alert("Driver Added");
 }
 
-function openAdmin() {
-  const password = prompt("Enter Admin Password");
-  if (password === "admin123") {
-    document.getElementById("adminSection").style.display = "block";
-    loadDrivers();
-  } else {
-    alert("Wrong password");
+function goOnline() {
+
+  if (!driverId) {
+    alert("Save company first");
+    return;
   }
-}
 
-function loadDrivers() {
-  const container = document.getElementById("allDrivers");
+  navigator.geolocation.getCurrentPosition(position => {
 
-  db.collection("drivers").onSnapshot(snapshot => {
-    container.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const d = doc.data();
-
-      container.innerHTML += `
-        <div style="margin-bottom:15px;">
-          <strong>${d.company}</strong><br>
-          Driver: ${d.name}<br>
-          Status: ${d.status}<br>
-          Services: ${d.services}<br>
-        </div>
-      `;
+    db.collection("drivers").doc(driverId).update({
+      status: "ON",
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude
     });
+
+    alert("You are now ONLINE");
+
   });
 }
 
