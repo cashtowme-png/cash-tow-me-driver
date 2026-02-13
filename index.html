@@ -191,13 +191,6 @@ function toggleStatus(id, currentStatus) {
   }
 }
 
-function payDaily(id) {
-  db.collection("drivers").doc(id).update({
-    subscription: "DAILY"
-  });
-  alert("Daily Plan Activated");
-}
-
 function payMonthly(id) {
   db.collection("drivers").doc(id).update({
     subscription: "MONTHLY"
@@ -205,4 +198,61 @@ function payMonthly(id) {
   alert("Monthly Plan Activated");
 }
 
+function payDaily(id) {
+  db.collection("drivers").doc(id).update({
+    subscription: "DAILY"
+  });
+  alert("Daily Plan Activated");
+}
+
+function toggleStatus(id, currentStatus) {
+  if (currentStatus === "OFF") {
+    navigator.geolocation.getCurrentPosition(position => {
+      db.collection("drivers").doc(id).update({
+        status: "ON",
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        lastUpdated: Date.now()
+      });
+    });
+  } else {
+    db.collection("drivers").doc(id).update({
+      status: "OFF",
+      latitude: null,
+      longitude: null
+    });
+  }
+}
+
+function loadDrivers() {
+  const container = document.getElementById("allDrivers");
+
+  db.collection("drivers").onSnapshot(snapshot => {
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
+      container.innerHTML += `
+        <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
+          <strong>${d.company}</strong><br>
+          Driver: ${d.name}<br>
+          Status: ${d.status}<br>
+          Subscription: ${d.subscription}<br><br>
+
+          <button onclick="toggleStatus('${doc.id}', '${d.status}')">
+            ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
+          </button>
+
+          <br><br>
+
+          <button onclick="payDaily('${doc.id}')">$5 Daily</button>
+          <button onclick="payMonthly('${doc.id}')">$30 Monthly</button>
+        </div>
+      `;
+    });
+  });
+}
+
+/* 
 loadDrivers();
