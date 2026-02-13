@@ -8,52 +8,57 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #0f172a;
-  color: white;
+  margin:0;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+  background:#0f0f0f;
+  color:white;
 }
 
 .header {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  padding: 25px;
-  text-align: center;
-  font-size: 22px;
-  font-weight: bold;
-  border-bottom-left-radius: 25px;
-  border-bottom-right-radius: 25px;
+  padding:20px;
+  font-size:24px;
+  font-weight:bold;
 }
 
 .card {
-  background: #1e293b;
-  margin: 20px;
-  padding: 20px;
-  border-radius: 20px;
+  background:#1c1c1e;
+  margin:20px;
+  padding:20px;
+  border-radius:20px;
 }
 
 input {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 12px;
-  border-radius: 12px;
-  border: none;
+  width:100%;
+  padding:14px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:none;
+  font-size:16px;
 }
 
 button {
-  width: 100%;
-  padding: 14px;
-  border-radius: 12px;
-  border: none;
-  margin-top: 10px;
-  background: #22c55e;
-  color: white;
-  font-weight: bold;
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.btn-primary {
+  background:#ff3b30;
+  color:white;
+}
+
+.btn-secondary {
+  background:#2c2c2e;
+  color:white;
 }
 </style>
 </head>
@@ -61,12 +66,10 @@ button {
 <body>
 
 <div class="header">
-🚛 Driver Dashboard
+🚛 Cash Tow Me – Driver
 </div>
 
 <div class="card">
-<h3>Add Company</h3>
-
 <input id="name" placeholder="Driver Name">
 <input id="company" placeholder="Company Name">
 <input id="phone" placeholder="Phone Number">
@@ -74,13 +77,21 @@ button {
 <input id="truck" placeholder="Truck Type">
 <input id="services" placeholder="Services (Flatbed, Winch, Lockout)">
 
-<button onclick="addDriver()">Save Company</button>
-<button onclick="goOnline()">Go Online</button>
+<button class="btn-primary" onclick="addDriver()">Add Driver</button>
+<button class="btn-secondary" onclick="openAdmin()">Admin Panel</button>
+</div>
+
+<div id="adminSection" style="display:none;">
+  <div class="card">
+    <h3>All Drivers</h3>
+    <div id="allDrivers"></div>
+  </div>
 </div>
 
 <script>
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
+  apiKey: "YOUR API KEY HERE",
   authDomain: "cash-dispatch.firebaseapp.com",
   projectId: "cash-dispatch",
   storageBucket: "cash-dispatch.appspot.com",
@@ -90,8 +101,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
-let driverId = null;
 
 function addDriver() {
   const name = document.getElementById("name").value;
@@ -113,38 +122,49 @@ function addDriver() {
     city,
     truck,
     services,
-    approved: true,
+    approved: false,
     status: "OFF",
     createdAt: Date.now()
-  }).then(docRef => {
-    driverId = docRef.id;
-    alert("Company Saved");
   });
+
+  alert("Driver Added");
 }
 
-function goOnline() {
-
-  if (!driverId) {
-    alert("Save company first");
-    return;
+function openAdmin() {
+  const password = prompt("Enter Admin Password");
+  if (password === "admin123") {
+    document.getElementById("adminSection").style.display = "block";
+    loadDrivers();
+  } else {
+    alert("Wrong password");
   }
+}
 
-  navigator.geolocation.getCurrentPosition(position => {
+function loadDrivers() {
+  const container = document.getElementById("allDrivers");
 
-    db.collection("drivers").doc(driverId).update({
-      status: "ON",
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude
+  db.collection("drivers").onSnapshot(snapshot => {
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const d = doc.data();
+
+      container.innerHTML += `
+        <div style="margin-bottom:20px;">
+          <strong>${d.company}</strong><br>
+          Driver: ${d.name}<br>
+          Status: ${d.status}<br>
+          Services: ${d.services}<br>
+        </div>
+      `;
     });
-
-    alert("You are now ONLINE");
-
   });
 }
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }
+
 </script>
 
 </body>
