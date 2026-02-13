@@ -91,7 +91,7 @@ button {
 <script>
 
 const firebaseConfig = {
- apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
+  apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
   authDomain: "cash-dispatch.firebaseapp.com",
   projectId: "cash-dispatch",
   storageBucket: "cash-dispatch.appspot.com",
@@ -115,19 +115,18 @@ function addDriver() {
     return;
   }
 
- db.collection("drivers").add({
-  name,
-  company,
-  phone,
-  city,
-  truck,
-  services,
-  approved: false,
-  status: "OFF",
-  subscription: "NONE",   // 🔥 NEW
-  createdAt: Date.now()
-});
-
+  db.collection("drivers").add({
+    name,
+    company,
+    phone,
+    city,
+    truck,
+    services,
+    approved: false,
+    status: "OFF",
+    subscription: "NONE",
+    createdAt: Date.now()
+  });
 
   alert("Driver Added");
 }
@@ -153,12 +152,11 @@ function loadDrivers() {
 
       container.innerHTML += `
         <div style="margin-bottom:20px; padding:15px; background:#222; border-radius:12px;">
-          
           <strong>${d.company}</strong><br>
           Driver: ${d.name}<br>
-          Status: <b>${d.status}</b><br>
+          Status: ${d.status}<br>
           Services: ${d.services}<br>
-          Subscription: ${d.subscription || "NONE"}<br><br>
+          Subscription: ${d.subscription}<br><br>
 
           <button onclick="toggleStatus('${doc.id}', '${d.status}')">
             ${d.status === "ON" ? "🟢 Go Offline" : "🔴 Go Online"}
@@ -168,7 +166,6 @@ function loadDrivers() {
 
           <button onclick="payDaily('${doc.id}')">$5 Daily</button>
           <button onclick="payMonthly('${doc.id}')">$30 Monthly</button>
-
         </div>
       `;
     });
