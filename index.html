@@ -63,6 +63,8 @@
 
 <script>
 
+<script>
+
 function addDriver() {
 
   const name = document.getElementById("name").value;
@@ -72,7 +74,7 @@ function addDriver() {
   const truck = document.getElementById("truck").value;
 
   if (!name || !company || !phone || !city || !truck) {
-    alert("Please fill all fields");
+    alert("Fill all fields");
     return;
   }
 
@@ -87,95 +89,45 @@ function addDriver() {
     createdAt: Date.now()
   });
 
-  alert("Driver added!");
 }
 
 function approveDriver(id) {
   db.collection("drivers").doc(id).update({ approved: true });
 }
 
-function deleteDriver(id) {
-  db.collection("drivers").doc(id).delete();
-}
-
 function toggleStatus(id, currentStatus) {
 
   if (currentStatus === "OFF") {
+
     navigator.geolocation.getCurrentPosition(position => {
+
       db.collection("drivers").doc(id).update({
         status: "ON",
         latitude: position.coords.latitude,
         longitude: position.coords.longitude,
         lastUpdated: Date.now()
       });
+
     });
+
   } else {
+
     db.collection("drivers").doc(id).update({
       status: "OFF",
       latitude: null,
       longitude: null
     });
+
   }
+
 }
 
-function acceptRequest(requestId) {
-  db.collection("requests").doc(requestId).update({
-    status: "assigned",
-    acceptedAt: Date.now()
-  });
-}
-
-function completeRequest(id) {
-  db.collection("requests").doc(id).update({
-    status: "completed"
-  });
-}
-
-function loadAllDrivers() {
-  const container = document.getElementById("allDrivers");
-
-  db.collection("drivers").onSnapshot(snapshot => {
-    container.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const d = doc.data();
-
-      container.innerHTML += `
-        <div class="card">
-          <strong>${d.company}</strong><br>
-          Driver: ${d.name}<br>
-          Approved: ${d.approved}<br>
-          Status: ${d.status}<br>
-          <button onclick="approveDriver('${doc.id}')">Approve</button>
-          <button onclick="toggleStatus('${doc.id}','${d.status}')">Toggle</button>
-          <button onclick="deleteDriver('${doc.id}')">Delete</button>
-        </div>
-      `;
-    });
-  });
-}
-
-function loadRequests() {
-  const container = document.getElementById("requestsList");
-
-  db.collection("requests").onSnapshot(snapshot => {
-    container.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const r = doc.data();
-
-      container.innerHTML += `
-        <div class="card">
-          Status: ${r.status}<br>
-          <button onclick="acceptRequest('${doc.id}')">Accept</button>
-          <button onclick="completeRequest('${doc.id}')">Complete</button>
-        </div>
-      `;
-    });
-  });
+function deleteDriver(id) {
+  db.collection("drivers").doc(id).delete();
 }
 
 function openAdmin() {
+
   const password = prompt("Enter Admin Password");
 
   if (password === "admin123") {
@@ -183,11 +135,38 @@ function openAdmin() {
   } else {
     alert("Wrong password");
   }
+
+}
+
+function loadAllDrivers() {
+
+  const container = document.getElementById("allDrivers");
+
+  db.collection("drivers").onSnapshot(snapshot => {
+
+    container.innerHTML = "";
+
+    snapshot.forEach(doc => {
+
+      const d = doc.data();
+
+      container.innerHTML += `
+        <div class="card">
+          <strong>${d.company}</strong><br>
+          Driver: ${d.name}<br>
+          Status: ${d.status}<br>
+          <button onclick="approveDriver('${doc.id}')">Approve</button>
+          <button onclick="toggleStatus('${doc.id}','${d.status}')">Toggle</button>
+          <button onclick="deleteDriver('${doc.id}')">Delete</button>
+        </div>
+      `;
+
+    });
+
+  });
+
 }
 
 loadAllDrivers();
-loadRequests();
 
 </script>
-
-</body>
