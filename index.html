@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -174,34 +173,4 @@ function toggleStatus() {
       status = "OFF";
       document.getElementById("toggleBtn").innerText = "Go Online";
       document.getElementById("toggleBtn").className = "btn-online";
-      document.getElementById("statusText").innerText = "Status: OFFLINE";
-      stopGPS();
-    }
-
-    db.collection("drivers").doc(driverId).update({status});
-  });
-}
-
-// GPS tracking
-function startGPS() {
-  if (!navigator.geolocation) return;
-  watchId = navigator.geolocation.watchPosition(pos => {
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    document.getElementById("gpsText").innerText = `GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    db.collection("drivers").doc(driverId).update({latitude:lat, longitude:lng});
-  }, err => alert("GPS error"), {enableHighAccuracy:true});
-}
-
-function stopGPS() {
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-  watchId = null;
-  document.getElementById("gpsText").innerText = "GPS: Not Active";
-}
-
-// Register PWA service worker
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
-</script>
-
-</body>
-</html>
+      document.getElementById("statusText").inner
