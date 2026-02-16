@@ -122,7 +122,6 @@ let driverId = localStorage.getItem("driverId");
 let status = "OFF";
 let watchId = null;
 
-// Save or update profile
 function saveDriver() {
   const name = document.getElementById("name").value;
   const company = document.getElementById("company").value;
@@ -149,13 +148,11 @@ function saveDriver() {
   }
 }
 
-// Stripe payment
 function paySubscription(type) {
   let url = type === "daily" ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
   window.open(url, "_blank");
 }
 
-// Toggle online/offline
 function toggleStatus() {
   if (!driverId) return alert("Save profile first");
 
@@ -173,4 +170,33 @@ function toggleStatus() {
       status = "OFF";
       document.getElementById("toggleBtn").innerText = "Go Online";
       document.getElementById("toggleBtn").className = "btn-online";
-      document.getElementById("statusText").inner
+      document.getElementById("statusText").innerText = "Status: OFFLINE";
+      stopGPS();
+    }
+
+    db.collection("drivers").doc(driverId).update({status});
+  });
+}
+
+function startGPS() {
+  if (!navigator.geolocation) return;
+  watchId = navigator.geolocation.watchPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    document.getElementById("gpsText").innerText = `GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    db.collection("drivers").doc(driverId).update({latitude:lat, longitude:lng});
+  }, err => alert("GPS error"), {enableHighAccuracy:true});
+}
+
+function stopGPS() {
+  if (watchId) navigator.geolocation.clearWatch(watchId);
+  watchId = null;
+  document.getElementById("gpsText").innerText = "GPS: Not Active";
+}
+
+// Register service worker
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+</script>
+
+</body>
+</html>
