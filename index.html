@@ -3,35 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <title>Cash Tow Me – Driver</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-body {
+html, body {
   margin:0;
+  padding:0;
   font-family:-apple-system, BlinkMacSystemFont, sans-serif;
   background:#0f0f0f;
   color:white;
-  padding:20px;
+  height:100%;
 }
 
-h2 {
-  margin-bottom:20px;
+header {
+  background:#2563eb;
+  color:white;
   text-align:center;
+  padding:25px 10px;
+  font-size:22px;
+  font-weight:bold;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
+}
+
+.container {
+  padding:15px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
 }
 
 .card {
   background:#1c1c1e;
   padding:20px;
   border-radius:20px;
-  margin-bottom:20px;
 }
 
 input {
   width:100%;
-  padding:14px;
+  padding:16px;
   margin-bottom:12px;
   border-radius:12px;
   border:none;
@@ -46,37 +61,49 @@ button {
   font-size:16px;
   font-weight:bold;
   margin-bottom:10px;
+  cursor:pointer;
 }
 
-.btn-on { background:#16a34a; color:white; }
-.btn-off { background:#dc2626; color:white; }
+.btn-online { background:#16a34a; color:white; }
+.btn-offline { background:#dc2626; color:white; }
 .btn-pay { background:#2563eb; color:white; }
+
+#statusText, #gpsText {
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+  color:#ccc;
+}
 </style>
 </head>
 
 <body>
 
-<h2>🚛 Cash Tow Me – Driver</h2>
+<header>🚛 Cash Tow Me – Driver</header>
 
-<!-- Profile Card -->
-<div class="card">
-  <input id="name" placeholder="Driver Name">
-  <input id="company" placeholder="Company Name">
-  <input id="phone" placeholder="Phone Number">
-  <input id="city" placeholder="City">
-  <input id="services" placeholder="Services (Flatbed, Winch)">
-  <button onclick="saveDriver()">Save Profile</button>
+<div class="container">
 
-  <!-- Stripe Payment Buttons -->
-  <button class="btn-pay" onclick="paySubscription('daily')">💳 Pay Daily</button>
-  <button class="btn-pay" onclick="paySubscription('monthly')">💳 Pay Monthly</button>
-</div>
+  <!-- Profile Card -->
+  <div class="card">
+    <input id="name" placeholder="Driver Name">
+    <input id="company" placeholder="Company Name">
+    <input id="phone" placeholder="Phone Number">
+    <input id="city" placeholder="City">
+    <input id="services" placeholder="Services (Flatbed, Winch)">
+    <button onclick="saveDriver()">Save Profile</button>
 
-<!-- Online/Offline Toggle -->
-<div class="card">
-  <button id="toggleBtn" class="btn-on" onclick="toggleStatus()">Go Online</button>
-  <p id="statusText">Status: OFFLINE</p>
-  <p id="gpsText">GPS: Not Active</p>
+    <!-- Stripe Payment -->
+    <button class="btn-pay" onclick="paySubscription('daily')">💳 Pay Daily</button>
+    <button class="btn-pay" onclick="paySubscription('monthly')">💳 Pay Monthly</button>
+  </div>
+
+  <!-- Online/Offline Toggle -->
+  <div class="card">
+    <button id="toggleBtn" class="btn-online" onclick="toggleStatus()">Go Online</button>
+    <p id="statusText">Status: OFFLINE</p>
+    <p id="gpsText">GPS: Not Active</p>
+  </div>
+
 </div>
 
 <script>
@@ -96,7 +123,7 @@ let driverId = localStorage.getItem("driverId");
 let status = "OFF";
 let watchId = null;
 
-// Save or update driver profile
+// Save or update profile
 function saveDriver() {
   const name = document.getElementById("name").value;
   const company = document.getElementById("company").value;
@@ -104,96 +131,76 @@ function saveDriver() {
   const city = document.getElementById("city").value;
   const services = document.getElementById("services").value;
 
-  if (!name || !phone) {
-    alert("Name and phone required");
-    return;
-  }
+  if (!name || !phone) return alert("Name and Phone required");
 
   if (driverId) {
-    db.collection("drivers").doc(driverId).update({
-      name, company, phone, city, services
-    });
+    db.collection("drivers").doc(driverId).update({name, company, phone, city, services});
     alert("Profile updated");
   } else {
     db.collection("drivers").add({
-      name,
-      company,
-      phone,
-      city,
-      services,
-      approved: false,
-      paid: false,
-      status: "OFF",
-      latitude: null,
-      longitude: null,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      name, company, phone, city, services,
+      approved:false, paid:false, status:"OFF",
+      latitude:null, longitude:null,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
     }).then(doc => {
       driverId = doc.id;
       localStorage.setItem("driverId", driverId);
-      alert("Profile saved. Await admin approval and payment.");
+      alert("Profile saved. Await admin approval & payment.");
     });
   }
 }
 
-// Stripe Payment
+// Stripe payment
 function paySubscription(type) {
-  let url = "";
-  if (type === "daily") url = "https://buy.stripe.com/test_daily_link";
-  if (type === "monthly") url = "https://buy.stripe.com/test_monthly_link";
+  let url = type === "daily" ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
   window.open(url, "_blank");
 }
 
-// Toggle online/offline with paid + approved check
+// Toggle online/offline
 function toggleStatus() {
-  if (!driverId) {
-    alert("Save profile first");
-    return;
-  }
+  if (!driverId) return alert("Save profile first");
 
   db.collection("drivers").doc(driverId).get().then(doc => {
     const data = doc.data();
-    if (!data.paid || !data.approved) {
-      alert("You must be approved and pay the subscription before going online.");
-      return;
-    }
+    if (!data.paid || !data.approved) return alert("Must be approved and pay before going online");
 
     if (status === "OFF") {
       status = "ON";
       document.getElementById("toggleBtn").innerText = "Go Offline";
-      document.getElementById("toggleBtn").className = "btn-off";
+      document.getElementById("toggleBtn").className = "btn-offline";
       document.getElementById("statusText").innerText = "Status: ONLINE";
       startGPS();
     } else {
       status = "OFF";
       document.getElementById("toggleBtn").innerText = "Go Online";
-      document.getElementById("toggleBtn").className = "btn-on";
+      document.getElementById("toggleBtn").className = "btn-online";
       document.getElementById("statusText").innerText = "Status: OFFLINE";
       stopGPS();
     }
 
-    db.collection("drivers").doc(driverId).update({
-      status: status
-    });
+    db.collection("drivers").doc(driverId).update({status});
   });
 }
 
-// Start GPS tracking
+// GPS tracking
 function startGPS() {
   if (!navigator.geolocation) return;
   watchId = navigator.geolocation.watchPosition(pos => {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
     document.getElementById("gpsText").innerText = `GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    db.collection("drivers").doc(driverId).update({ latitude: lat, longitude: lng });
-  }, err => { alert("GPS error"); }, { enableHighAccuracy: true });
+    db.collection("drivers").doc(driverId).update({latitude:lat, longitude:lng});
+  }, err => alert("GPS error"), {enableHighAccuracy:true});
 }
 
-// Stop GPS
 function stopGPS() {
   if (watchId) navigator.geolocation.clearWatch(watchId);
   watchId = null;
   document.getElementById("gpsText").innerText = "GPS: Not Active";
 }
+
+// Register PWA service worker
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
 </script>
 
 </body>
