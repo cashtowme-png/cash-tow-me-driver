@@ -59,7 +59,29 @@ button {
 
 <h2>🛠 Admin – Driver Approvals</h2>
 
-<div id="driverList"></div>
+container.innerHTML += `
+  <div class="driver-card">
+    <strong>${d.company || "No Company"}</strong><br>
+    ${d.name || ""}<br>
+    📞 ${d.phone || ""}<br>
+    📍 ${d.city || ""}<br>
+
+    <div class="status">
+      Status: ${d.status || "OFF"} |
+      Approved: ${d.approved ? "YES" : "NO"} |
+      Paid: ${d.paid ? "YES" : "NO"}
+    </div>
+
+    <button class="btn-approve" onclick="toggleApprove('${id}', ${d.approved})" ${!d.paid ? "disabled style='opacity:0.5'" : ""}>
+      ${d.approved ? "Unapprove" : "Approve"}
+    </button>
+
+    <button class="btn-remove" onclick="deleteDriver('${id}')">
+      Delete
+    </button>
+  </div>
+`;
+
 
 <script>
 const firebaseConfig = {
@@ -126,17 +148,45 @@ function loadDrivers() {
     });
 }
 
-function toggleApprove(id, currentStatus) {
-  db.collection("drivers").doc(id).update({
-    approved: !currentStatus
+function toggleStatus() {
+  if (!driverId) {
+    alert("Save profile first");
+    return;
+  }
+
+  db.collection("drivers").doc(driverId).get().then(doc => {
+    const data = doc.data();
+
+    if (!data.paid || !data.approved) {
+      alert("You must be approved and pay the subscription before going online.");
+      return;
+    }
+
+    // Proceed to toggle status
+    if (status === "OFF") {
+      status = "ON";
+      document.getElementById("toggleBtn").innerText = "Go Offline";
+      document.getElementById("toggleBtn").className = "btn-off";
+      document.getElementById("statusText").innerText = "Status: ONLINE";
+      startGPS();
+    } else {
+      status = "OFF";
+      document.getElementById("toggleBtn").innerText = "Go Online";
+      document.getElementById("toggleBtn").className = "btn-on";
+      document.getElementById("statusText").innerText = "Status: OFFLINE";
+      stopGPS();
+    }
+
+    db.collection("drivers").doc(driverId).update({
+      status: status
+    });
   });
 }
-
-function deleteDriver(id) {
-  if (confirm("Delete this driver?")) {
-    db.collection("drivers").doc(id).delete();
-  }
+function paySubscription() {
+  const stripeURL = "https://https://buy.stripe.com/test_5kQ3co5Pu0i9832cgJ83C02";
+  window.open(stripeURL, "_blank");
 }
+
 
 loadDrivers();
 </script>
