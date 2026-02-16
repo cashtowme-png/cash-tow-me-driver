@@ -1,10 +1,10 @@
 {
-  "name": "Cash Tow Me Driver",
-  "short_name": "CashTow",
- "start_url": "/cash-tow-me-driver/",
+  "name": "Cash Tow Me – Driver",
+  "short_name": "Cash Tow Me",
+  "start_url": "driver.html",
   "display": "standalone",
-  "background_color": "#f0f8ff",
-  "theme_color": "#007bff",
+  "background_color": "#0f0f0f",
+  "theme_color": "#2563eb",
   "icons": [
     {
       "src": "icons/icon-192.png",
