@@ -59,29 +59,7 @@ button {
 
 <h2>🛠 Admin – Driver Approvals</h2>
 
-container.innerHTML += `
-  <div class="driver-card">
-    <strong>${d.company || "No Company"}</strong><br>
-    ${d.name || ""}<br>
-    📞 ${d.phone || ""}<br>
-    📍 ${d.city || ""}<br>
-
-    <div class="status">
-      Status: ${d.status || "OFF"} |
-      Approved: ${d.approved ? "YES" : "NO"} |
-      Paid: ${d.paid ? "YES" : "NO"}
-    </div>
-
-    <button class="btn-approve" onclick="toggleApprove('${id}', ${d.approved})" ${!d.paid ? "disabled style='opacity:0.5'" : ""}>
-      ${d.approved ? "Unapprove" : "Approve"}
-    </button>
-
-    <button class="btn-remove" onclick="deleteDriver('${id}')">
-      Delete
-    </button>
-  </div>
-`;
-
+<div id="driverList"></div>
 
 <script>
 const firebaseConfig = {
@@ -106,34 +84,23 @@ function loadDrivers() {
       container.innerHTML = "";
 
       snapshot.forEach(doc => {
-
         const d = doc.data();
         const id = doc.id;
 
         container.innerHTML += `
-         <div class="card">
-  <input id="name" placeholder="Driver Name">
-  <input id="company" placeholder="Company Name">
-  <input id="phone" placeholder="Phone Number">
-  <input id="city" placeholder="City">
-  <input id="services" placeholder="Services (Flatbed, Winch)">
-  <button onclick="saveDriver()">Save Profile</button>
-
-  <!-- Stripe Payment Button -->
-  <button onclick="paySubscription()"https://buy.stripe.com/test_00wcMY1ze3ul1EE6Wp83C00">
-  💳 Pay Daily
-  <button onclick="paySubscription()"https://buy.stripe.com/test_28EdR291G6Gx1EEfsV83C01">
-  💳 Pay Monthly
-  </button>
-</div>
-
+          <div class="driver-card">
+            <strong>${d.company || "No Company"}</strong><br>
+            ${d.name || ""}<br>
+            📞 ${d.phone || ""}<br>
+            📍 ${d.city || ""}<br>
 
             <div class="status">
               Status: ${d.status || "OFF"} |
-              Approved: ${d.approved ? "YES" : "NO"}
+              Approved: ${d.approved ? "YES" : "NO"} |
+              Paid: ${d.paid ? "YES" : "NO"}
             </div>
 
-            <button class="btn-approve" onclick="toggleApprove('${id}', ${d.approved})">
+            <button class="btn-approve" onclick="toggleApprove('${id}', ${d.approved})" ${!d.paid ? "disabled style='opacity:0.5'" : ""}>
               ${d.approved ? "Unapprove" : "Approve"}
             </button>
 
@@ -142,54 +109,26 @@ function loadDrivers() {
             </button>
           </div>
         `;
-
       });
 
     });
 }
 
-function toggleStatus() {
-  if (!driverId) {
-    alert("Save profile first");
-    return;
-  }
-
-  db.collection("drivers").doc(driverId).get().then(doc => {
-    const data = doc.data();
-
-    if (!data.paid || !data.approved) {
-      alert("You must be approved and pay the subscription before going online.");
-      return;
-    }
-
-    // Proceed to toggle status
-    if (status === "OFF") {
-      status = "ON";
-      document.getElementById("toggleBtn").innerText = "Go Offline";
-      document.getElementById("toggleBtn").className = "btn-off";
-      document.getElementById("statusText").innerText = "Status: ONLINE";
-      startGPS();
-    } else {
-      status = "OFF";
-      document.getElementById("toggleBtn").innerText = "Go Online";
-      document.getElementById("toggleBtn").className = "btn-on";
-      document.getElementById("statusText").innerText = "Status: OFFLINE";
-      stopGPS();
-    }
-
-    db.collection("drivers").doc(driverId).update({
-      status: status
-    });
+function toggleApprove(id, currentStatus) {
+  db.collection("drivers").doc(id).update({
+    approved: !currentStatus
   });
 }
-function paySubscription() {
-  const stripeURL = "https://https://buy.stripe.com/test_5kQ3co5Pu0i9832cgJ83C02";
-  window.open(stripeURL, "_blank");
-}
 
+function deleteDriver(id) {
+  if (confirm("Delete this driver?")) {
+    db.collection("drivers").doc(id).delete();
+  }
+}
 
 loadDrivers();
 </script>
 
 </body>
 </html>
+
