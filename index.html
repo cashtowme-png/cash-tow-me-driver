@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Cash Tow Me – Driver</title>
@@ -75,7 +75,6 @@ button {
 }
 </style>
 </head>
-
 <body>
 
 <header>🚛 Cash Tow Me – Driver</header>
@@ -91,7 +90,6 @@ button {
     <input id="services" placeholder="Services (Flatbed, Winch)">
     <button onclick="saveDriver()">Save Profile</button>
 
-    <!-- Stripe Payment -->
     <button class="btn-pay" onclick="paySubscription('daily')">💳 Pay Daily</button>
     <button class="btn-pay" onclick="paySubscription('monthly')">💳 Pay Monthly</button>
   </div>
@@ -194,9 +192,9 @@ function stopGPS() {
   document.getElementById("gpsText").innerText = "GPS: Not Active";
 }
 
-// Register service worker
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
 </script>
 
 </body>
 </html>
+
