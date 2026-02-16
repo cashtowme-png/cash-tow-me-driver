@@ -89,11 +89,22 @@ function loadDrivers() {
         const id = doc.id;
 
         container.innerHTML += `
-          <div class="driver-card">
-            <strong>${d.company || "No Company"}</strong><br>
-            ${d.name || ""}<br>
-            📞 ${d.phone || ""}<br>
-            📍 ${d.city || ""}<br>
+         <div class="card">
+  <input id="name" placeholder="Driver Name">
+  <input id="company" placeholder="Company Name">
+  <input id="phone" placeholder="Phone Number">
+  <input id="city" placeholder="City">
+  <input id="services" placeholder="Services (Flatbed, Winch)">
+  <button onclick="saveDriver()">Save Profile</button>
+
+  <!-- Stripe Payment Button -->
+  <button onclick="paySubscription()"https://buy.stripe.com/test_00wcMY1ze3ul1EE6Wp83C00">
+  💳 Pay Daily
+  <button onclick="paySubscription()"https://buy.stripe.com/test_28EdR291G6Gx1EEfsV83C01">
+  💳 Pay Monthly
+  </button>
+</div>
+
 
             <div class="status">
               Status: ${d.status || "OFF"} |
