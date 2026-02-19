@@ -10,37 +10,92 @@
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-html, body {margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:#0f0f0f; color:white; height:100%;}
-header {background:#2563eb; color:white; text-align:center; padding:25px 10px; font-size:22px; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.3);}
-.container {padding:15px; display:flex; flex-direction:column; gap:15px;}
-.card {background:#1c1c1e; padding:20px; border-radius:20px;}
-input {width:100%; padding:16px; margin-bottom:12px; border-radius:12px; border:none; font-size:16px;}
-button {width:100%; padding:16px; border:none; border-radius:14px; font-size:16px; font-weight:bold; margin-bottom:10px; cursor:pointer;}
+html, body {
+  margin:0;
+  padding:0;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+  background:#0f0f0f;
+  color:white;
+  height:100%;
+}
+
+header {
+  background:#2563eb;
+  color:white;
+  text-align:center;
+  padding:25px 10px;
+  font-size:22px;
+  font-weight:bold;
+  box-shadow:0 4px 8px rgba(0,0,0,0.3);
+}
+
+.container {
+  padding:15px;
+  display:flex;
+  flex-direction:column;
+  gap:15px;
+}
+
+.card {
+  background:#1c1c1e;
+  padding:20px;
+  border-radius:20px;
+}
+
+input {
+  width:100%;
+  padding:16px;
+  margin-bottom:12px;
+  border-radius:12px;
+  border:none;
+  font-size:16px;
+}
+
+button {
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  font-weight:bold;
+  margin-bottom:10px;
+  cursor:pointer;
+}
+
+.btn-action { background:#2563eb; color:white; }
 .btn-online { background:#16a34a; color:white; }
 .btn-offline { background:#dc2626; color:white; }
-.btn-pay { background:#2563eb; color:white; }
-#statusText, #gpsText {text-align:center; margin-top:10px; font-size:14px; color:#ccc;}
+
+#statusText, #gpsText {
+  text-align:center;
+  margin-top:10px;
+  font-size:14px;
+  color:#ccc;
+}
 </style>
 </head>
+
 <body>
 
 <header>🚛 Cash Tow Me – Driver</header>
 
 <div class="container">
 
-  <!-- Profile -->
+  <!-- Profile Card -->
   <div class="card">
     <input id="name" placeholder="Driver Name">
     <input id="company" placeholder="Company Name">
     <input id="phone" placeholder="Phone Number">
     <input id="city" placeholder="City">
     <input id="services" placeholder="Services (Flatbed, Winch)">
-    <button onclick="saveDriver()">Save Profile</button>
-    <button class="btn-pay" onclick="paySubscription('daily')">💳 Pay Daily</button>
-    <button class="btn-pay" onclick="paySubscription('monthly')">💳 Pay Monthly</button>
+    <button class="btn-action" onclick="saveDriver()">💾 Save Profile</button>
+
+    <!-- Simplified Stripe Payment -->
+    <button class="btn-action" onclick="paySubscription('daily')">💳 Pay Daily</button>
+    <button class="btn-action" onclick="paySubscription('monthly')">💳 Pay Monthly</button>
   </div>
 
-  <!-- Online/Offline -->
+  <!-- Online/Offline Toggle -->
   <div class="card">
     <button id="toggleBtn" class="btn-online" onclick="toggleStatus()">Go Online</button>
     <p id="statusText">Status: OFFLINE</p>
@@ -50,6 +105,7 @@ button {width:100%; padding:16px; border:none; border-radius:14px; font-size:16p
 </div>
 
 <script>
+// Firebase config
 const firebaseConfig = {
   apiKey: "YOUR_API_KEY",
   authDomain: "cash-dispatch.firebaseapp.com",
@@ -65,12 +121,14 @@ let driverId = localStorage.getItem("driverId");
 let status = "OFF";
 let watchId = null;
 
+// Save or update profile
 function saveDriver() {
   const name = document.getElementById("name").value;
   const company = document.getElementById("company").value;
   const phone = document.getElementById("phone").value;
   const city = document.getElementById("city").value;
   const services = document.getElementById("services").value;
+
   if (!name || !phone) return alert("Name and Phone required");
 
   if (driverId) {
@@ -90,16 +148,22 @@ function saveDriver() {
   }
 }
 
+// Simplified Stripe payment
 function paySubscription(type) {
-  const url = type === "daily" ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
+  const url = type === "daily" 
+    ? "https://buy.stripe.com/test_daily_link" 
+    : "https://buy.stripe.com/test_monthly_link";
   window.open(url, "_blank");
 }
 
+// Toggle online/offline
 function toggleStatus() {
   if (!driverId) return alert("Save profile first");
+
   db.collection("drivers").doc(driverId).get().then(doc => {
     const data = doc.data();
     if (!data.paid || !data.approved) return alert("Must be approved and pay before going online");
+
     if (status === "OFF") {
       status = "ON";
       document.getElementById("toggleBtn").innerText = "Go Offline";
@@ -117,6 +181,7 @@ function toggleStatus() {
   });
 }
 
+// GPS tracking
 function startGPS() {
   if (!navigator.geolocation) return;
   watchId = navigator.geolocation.watchPosition(pos => {
@@ -133,11 +198,11 @@ function stopGPS() {
   document.getElementById("gpsText").innerText = "GPS: Not Active";
 }
 
-// Register service worker
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/service-worker.js")
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/service-worker.js')
     .then(() => console.log("Service Worker registered"))
-    .catch((err) => console.error("Service Worker failed:", err));
+    .catch(err => console.error("Service Worker failed:", err));
 }
 </script>
 
