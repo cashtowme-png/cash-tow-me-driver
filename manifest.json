@@ -1,8 +1,10 @@
 {
   "name": "Cash Tow Me – Driver",
-  "short_name": "Cash Tow Me",
-  "start_url": "driver.html",
+  "short_name": "CashTowDriver",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#0f0f0f",
-  "theme_color": "#2563eb"
+  "theme_color": "#2563eb",
+  "description": "Driver app for Cash Tow Me",
+  "icons": []
 }
