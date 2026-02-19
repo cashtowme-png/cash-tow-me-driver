@@ -90,14 +90,15 @@ button {
     <input id="phone" placeholder="Phone Number">
     <input id="city" placeholder="City">
     
-    <!-- Updated tow services input -->
     <select id="services" multiple>
-      <option value="Flatbed">Flatbed</option>
-      <option value="Winch">Winch</option>
-      <option value="Lockout">Lockout</option>
-      <option value="Jump Start">Jump Start</option>
-      <option value="Tire Change">Tire Change</option>
-    </select>
+  <option value="Flatbed">Flatbed</option>
+  <option value="Wheellift">Wheellift</option>
+  <option value="Lockout">Lockout</option>
+  <option value="Jump Start">Jump Start</option>
+  <option value="Tire Change">Tire Change</option>
+  <option value="Fuel">Fuel</option>
+</select>
+
 
     <button class="btn-action" onclick="saveDriver()">💾 Save Profile</button>
     <button class="btn-action" onclick="paySubscription('daily')">💳 Pay Daily</button>
