@@ -2,124 +2,93 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Cash Tow Me</title>
+<title>Cash Tow Me – Find a Tow</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <style>
-html, body {
-  margin:0;
-  padding:0;
-  background:#000;
-  color:white;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-}
-
-.header {
-  background:#1c1c1e;
+body {
+  font-family: Arial, sans-serif;
+  background:#f0f8ff;
   padding:20px;
   text-align:center;
-  font-size:22px;
-  border-bottom-left-radius:20px;
-  border-bottom-right-radius:20px;
 }
-
-.loader {
-  text-align:center;
-  padding:20px;
-  font-size:16px;
-  color:#888;
-}
-
-.company-card {
-  background:#1c1c1e;
+.card {
+  background:white;
   padding:15px;
-  margin:15px 20px;
-  border-radius:18px;
+  border-radius:8px;
+  margin:10px auto;
+  max-width:360px;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
 }
-
-button, .call-btn {
-  display:block;
-  width:100%;
-  padding:14px;
+button {
+  width:90%;
+  padding:12px;
+  margin-top:8px;
+  font-size:16px;
   border:none;
-  border-radius:14px;
-  font-weight:bold;
-  margin-top:10px;
-  text-align:center;
-  text-decoration:none;
-}
-
-.call-btn {
-  background:#34c759;
+  border-radius:5px;
+  background:#007bff;
   color:white;
+}
+.driver {
+  border:1px solid #ccc;
+  padding:10px;
+  border-radius:6px;
+  margin-top:8px;
+  background:#fefefe;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  🚛 Cash Tow Me
+<h1>🚗 Find a Tow Near You</h1>
+
+<div class="card">
+  <h3>Select City</h3>
+  <select id="city" style="width:90%; padding:10px;">
+    <option value="Dallas">Dallas</option>
+    <option value="Mesquite">Mesquite</option>
+    <option value="Garland">Garland</option>
+  </select>
+  <button onclick="loadDrivers()">Find Drivers</button>
 </div>
 
-<div class="loader" id="loader">Fetching nearby drivers...</div>
+<div id="results"></div>
 
-<div id="companyList"></div>
+<p style="font-size:12px; margin-top:15px;">
+  Payment is made directly to the driver.<br>
+  Cash Tow Me does not collect payment.
+</p>
 
 <script>
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "cash-dispatch.firebaseapp.com",
-  projectId: "cash-dispatch",
-  storageBucket: "cash-dispatch.appspot.com",
-  messagingSenderId: "79166345159",
-  appId: "1:79166345159:web:c763c3d806d2fc24db53e2"
-};
+// Example drivers (replace with Firebase data later)
+const drivers = [
+  { name: "Mike Towing", city: "Dallas", truck: "Wheel Lift", phone: "214-555-1111" },
+  { name: "Fast Tow", city: "Dallas", truck: "Flatbed", phone: "214-555-2222" },
+  { name: "City Tow", city: "Mesquite", truck: "Wheel Lift", phone: "972-555-3333" }
+];
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+function loadDrivers() {
+  const city = document.getElementById("city").value;
+  const results = document.getElementById("results");
+  results.innerHTML = "";
 
-function loadCompanies() {
+  drivers
+    .filter(d => d.city === city)
+    .forEach(d => {
+      const div = document.createElement("div");
+      div.className = "card driver";
+      div.innerHTML = `
+        <strong>${d.name}</strong><br>
+        🚛 ${d.truck}<br>
+        📍 ${d.city}<br>
+        <a href="tel:${d.phone}"><button>📞 Call Driver</button></a>
+      `;
+      results.appendChild(div);
+    });
+}
+</script>
 
-  const container = document.getElementById("companyList");
-  const loader = document.getElementById("loader");
-
-  if (!navigator.geolocation) {
-    loader.innerText = "GPS Required";
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(position => {
-
-    const cLat = position.coords.latitude;
-    const cLng = position.coords.longitude;
-
-    db.collection("drivers")
-      .where("approved", "==", true)
-      .where("status", "==", "ON")
-      .onSnapshot(snapshot => {
-
-        loader.style.display = "none";
-        container.innerHTML = "";
-
-        if (snapshot.empty) {
-          container.innerHTML = "<p style='text-align:center;padding:20px;'>No drivers nearby</p>";
-          return;
-        }
-
-        const drivers = [];
-        snapshot.forEach(doc => {
-          const d = doc.data();
-          if (!d.latitude || !d.longitude) return;
-
-          const distance = Math.sqrt(Math.pow(d.latitude - cLat,2) + Math.pow(d.longitude - cLng,2)) * 69;
-          if (distance <= 25) drivers.push({ id: doc.id, data: d, distance });
-        });
-
-        if (drivers.length === 0) {
+</body>
+</html>
