@@ -4,88 +4,137 @@
 <meta charset="UTF-8">
 <title>Cash Tow Me</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- PWA manifest -->
 <link rel="manifest" href="manifest.json">
 
 <style>
-body {
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#000;
-  color:white;
-}
-header {
-  background:#2563eb;
-  color:white;
-  text-align:center;
-  padding:25px;
-  font-size:22px;
-  font-weight:bold;
-}
-.container {
-  padding:15px;
-}
-button {
-  width:100%;
-  padding:14px;
-  margin-top:10px;
-  border:none;
-  border-radius:14px;
-  font-weight:bold;
-  cursor:pointer;
-}
-.btn-driver { background:#16a34a; color:white; }
-.btn-customer { background:#007bff; color:white; }
-.card { background:#1c1c1e; padding:20px; border-radius:20px; margin-bottom:15px; }
-input, select { width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:none; }
-.call-btn { background:#34c759; color:white; text-align:center; display:block; padding:12px; border-radius:12px; margin-top:6px; text-decoration:none; }
-#statusText, #gpsText { text-align:center; margin-top:8px; color:#ccc; }
+  body {
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    background:#0f0f0f;
+    color:white;
+  }
+
+  header {
+    background:#2563eb;
+    color:white;
+    text-align:center;
+    padding:25px 10px;
+    font-size:22px;
+    font-weight:bold;
+  }
+
+  .container {
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+  }
+
+  .card {
+    background:#1c1c1e;
+    padding:20px;
+    border-radius:20px;
+  }
+
+  input, select {
+    width:100%;
+    padding:16px;
+    margin-bottom:12px;
+    border-radius:12px;
+    border:none;
+    font-size:16px;
+  }
+
+  button {
+    width:100%;
+    padding:16px;
+    border:none;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:bold;
+    margin-bottom:10px;
+    cursor:pointer;
+  }
+
+  .btn-online { background:#16a34a; color:white; }
+  .btn-offline { background:#dc2626; color:white; }
+  .btn-pay { background:#2563eb; color:white; }
+  .btn-role { background:#1c1c1e; color:white; margin-bottom:8px; }
+
+  #statusText, #gpsText {
+    text-align:center;
+    font-size:14px;
+    color:#ccc;
+  }
+
+  .driver-card {
+    background:#111;
+    margin:10px 0;
+    padding:12px;
+    border-radius:12px;
+  }
+
+  a.call-btn {
+    display:block;
+    width:100%;
+    padding:12px;
+    text-align:center;
+    text-decoration:none;
+    border-radius:10px;
+    margin-top:8px;
+    background:#34c759;
+    color:white;
+    font-weight:bold;
+  }
 </style>
 </head>
 <body>
 
 <header>🚛 Cash Tow Me</header>
+
 <div class="container">
-
   <!-- Role selection -->
-  <div id="roleSelect" class="card">
-    <button class="btn-customer" onclick="showCustomer()">🚗 Customer</button>
-    <button class="btn-driver" onclick="showDriver()">🚛 Driver</button>
+  <div class="card" id="roleSelect">
+    <h3>Select Role</h3>
+    <button class="btn-role" onclick="setRole('driver')">I am a Tow Driver</button>
+    <button class="btn-role" onclick="setRole('customer')">I am a Motorist</button>
   </div>
 
-  <!-- Customer App -->
-  <div id="customerApp" style="display:none;">
-    <div class="card">
-      <h3>Select City</h3>
-      <select id="city">
-        <option value="Dallas">Dallas</option>
-        <option value="Mesquite">Mesquite</option>
-        <option value="Garland">Garland</option>
-      </select>
-      <button onclick="loadCustomerDrivers()">Find Drivers</button>
-    </div>
-    <div id="customerResults"></div>
+  <!-- Driver Section -->
+  <div class="card" id="driverSection" style="display:none;">
+    <h3>Driver Profile</h3>
+    <input id="name" placeholder="Driver Name">
+    <input id="company" placeholder="Company Name">
+    <input id="phone" placeholder="Phone Number">
+    <input id="city" placeholder="City">
+    <input id="services" placeholder="Services (Wheel Lift, Fuel)">
+    <button class="btn-pay" onclick="saveDriver()">💾 Save Profile</button>
+    <button class="btn-pay" onclick="paySubscription('daily')">💳 Pay Daily</button>
+    <button class="btn-pay" onclick="paySubscription('monthly')">💳 Pay Monthly</button>
+
+    <hr>
+    <button id="toggleBtn" class="btn-online" onclick="toggleStatus()">Go Online</button>
+    <p id="statusText">Status: OFFLINE</p>
+    <p id="gpsText">GPS: Not Active</p>
   </div>
 
-  <!-- Driver App -->
-  <div id="driverApp" style="display:none;">
-    <div class="card">
-      <input id="name" placeholder="Driver Name">
-      <input id="company" placeholder="Company Name">
-      <input id="phone" placeholder="Phone Number">
-      <input id="cityDriver" placeholder="City">
-      <input id="services" placeholder="Services (Wheel Lift, Fuel, Flatbed)">
-      <button onclick="saveDriver()">Save Profile</button>
-      <button onclick="paySubscription('daily')">💳 Pay Daily</button>
-      <button onclick="paySubscription('monthly')">💳 Pay Monthly</button>
-    </div>
-
-    <div class="card">
-      <button id="toggleBtn" class="btn-driver" onclick="toggleStatus()">Go Online</button>
-      <p id="statusText">Status: OFFLINE</p>
-      <p id="gpsText">GPS: Not Active</p>
-    </div>
+  <!-- Customer Section -->
+  <div class="card" id="customerSection" style="display:none;">
+    <h3>Find a Tow</h3>
+    <select id="citySelect">
+      <option value="Dallas">Dallas</option>
+      <option value="Mesquite">Mesquite</option>
+      <option value="Garland">Garland</option>
+    </select>
+    <button onclick="loadDrivers()">Find Drivers</button>
+    <div id="results"></div>
+    <p style="font-size:12px; margin-top:15px;">
+      Payment is made directly to the driver.<br>
+      Cash Tow Me does not collect payment.
+    </p>
   </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -103,104 +152,126 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// --- Role toggle ---
-function showCustomer() {
-  document.getElementById("roleSelect").style.display = "none";
-  document.getElementById("customerApp").style.display = "block";
-}
-function showDriver() {
-  document.getElementById("roleSelect").style.display = "none";
-  document.getElementById("driverApp").style.display = "block";
-}
-
-// --- Customer ---
-function loadCustomerDrivers() {
-  const city = document.getElementById("city").value;
-  const results = document.getElementById("customerResults");
-  results.innerHTML = "Fetching nearby drivers...";
-
-  db.collection("drivers")
-    .where("approved","==",true)
-    .where("status","==","ON")
-    .onSnapshot(snapshot => {
-      results.innerHTML = "";
-      snapshot.forEach(doc => {
-        const d = doc.data();
-        if(d.city !== city) return;
-        const div = document.createElement("div");
-        div.className="card";
-        div.innerHTML = `<strong>${d.company || d.name}</strong><br>
-                         🚛 ${d.services}<br>
-                         📍 ${d.city}<br>
-                         <a href="tel:${d.phone}" class="call-btn">📞 Call Driver</a>
-                         <a href="sms:${d.phone}" class="call-btn">💬 Text Driver</a>`;
-        results.appendChild(div);
-      });
-      if(results.innerHTML==="") results.innerHTML="<p>No drivers available in this city.</p>";
-    });
-}
-
-// --- Driver ---
+// Role selection
+let role = null;
 let driverId = localStorage.getItem("driverId");
 let status = "OFF";
 let watchId = null;
 
+function setRole(r) {
+  role = r;
+  document.getElementById("roleSelect").style.display = "none";
+  if(r === "driver") document.getElementById("driverSection").style.display = "block";
+  if(r === "customer") document.getElementById("customerSection").style.display = "block";
+}
+
+// Save driver profile
 function saveDriver() {
   const name = document.getElementById("name").value;
   const company = document.getElementById("company").value;
   const phone = document.getElementById("phone").value;
-  const cityDriver = document.getElementById("cityDriver").value;
+  const city = document.getElementById("city").value;
   const services = document.getElementById("services").value;
 
-  if(!name||!phone) return alert("Name and Phone required");
+  if(!name || !phone) return alert("Name and Phone required");
 
   if(driverId){
-    db.collection("drivers").doc(driverId).update({name,company,phone,city:cityDriver,services});
+    db.collection("drivers").doc(driverId).update({name, company, phone, city, services});
     alert("Profile updated");
   } else {
-    db.collection("drivers").add({name,company,phone,city:cityDriver,services,approved:false,paid:false,status:"OFF",latitude:null,longitude:null,createdAt:firebase.firestore.FieldValue.serverTimestamp()})
-      .then(doc=>{driverId=doc.id;localStorage.setItem("driverId",driverId);alert("Profile saved. Await admin approval & payment.");});
+    db.collection("drivers").add({
+      name, company, phone, city, services,
+      approved:false, paid:false, status:"OFF",
+      latitude:null, longitude:null,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
+    }).then(doc=>{
+      driverId = doc.id;
+      localStorage.setItem("driverId", driverId);
+      alert("Profile saved. Await admin approval & payment.");
+    });
   }
 }
 
+// Stripe payments
 function paySubscription(type){
-  let url=type==='daily'?"https://buy.stripe.com/test_daily_link":"https://buy.stripe.com/test_monthly_link";
-  window.open(url,"_blank");
+  let url = type==='daily' ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
+  window.open(url, "_blank");
 }
 
+// Toggle driver online/offline
 function toggleStatus(){
-  if(!driverId)return alert("Save profile first");
+  if(!driverId) return alert("Save profile first");
+
   db.collection("drivers").doc(driverId).get().then(doc=>{
-    const data=doc.data();
-    if(!data.paid||!data.approved)return alert("Must be approved and pay before going online");
+    const data = doc.data();
+    if(!data.paid || !data.approved) return alert("Must be approved and pay before going online");
+
     if(status==="OFF"){
-      status="ON"; document.getElementById("toggleBtn").innerText="Go Offline"; startGPS();
+      status="ON";
+      document.getElementById("toggleBtn").innerText="Go Offline";
+      document.getElementById("toggleBtn").className="btn-offline";
       document.getElementById("statusText").innerText="Status: ONLINE";
+      startGPS();
     } else {
-      status="OFF"; document.getElementById("toggleBtn").innerText="Go Online"; stopGPS();
+      status="OFF";
+      document.getElementById("toggleBtn").innerText="Go Online";
+      document.getElementById("toggleBtn").className="btn-online";
       document.getElementById("statusText").innerText="Status: OFFLINE";
+      stopGPS();
     }
+
     db.collection("drivers").doc(driverId).update({status});
   });
 }
 
+// GPS tracking
 function startGPS(){
-  if(!navigator.geolocation)return;
-  watchId=navigator.geolocation.watchPosition(pos=>{
-    const lat=pos.coords.latitude, lng=pos.coords.longitude;
+  if(!navigator.geolocation) return;
+  watchId = navigator.geolocation.watchPosition(pos=>{
+    const lat=pos.coords.latitude;
+    const lng=pos.coords.longitude;
     document.getElementById("gpsText").innerText=`GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     db.collection("drivers").doc(driverId).update({latitude:lat,longitude:lng});
-  }, err=>alert("GPS error"), {enableHighAccuracy:true});
+  },err=>alert("GPS error"),{enableHighAccuracy:true});
 }
-
 function stopGPS(){
   if(watchId) navigator.geolocation.clearWatch(watchId);
   watchId=null;
   document.getElementById("gpsText").innerText="GPS: Not Active";
 }
 
-// --- Service Worker for PWA ---
-if('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+// Customer: load nearby drivers
+function loadDrivers(){
+  const city = document.getElementById("citySelect").value;
+  const results = document.getElementById("results");
+  results.innerHTML="Loading...";
+
+  db.collection("drivers").where("approved","==",true).where("status","==","ON").get().then(snapshot=>{
+    results.innerHTML="";
+    if(snapshot.empty){ results.innerHTML="No drivers available"; return; }
+
+    snapshot.forEach(doc=>{
+      const d = doc.data();
+      if(d.city !== city) return;
+      const div=document.createElement("div");
+      div.className="driver-card";
+      div.innerHTML=`
+        <strong>${d.company || d.name}</strong><br>
+        🚛 ${d.services}<br>
+        📍 ${d.city}<br>
+        <a class="call-btn" href="tel:${d.phone}">📞 Call Driver</a>
+      `;
+      results.appendChild(div);
+    });
+  });
+}
+
+// Register Service Worker for offline support
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(()=>console.log("Service Worker registered"))
+    .catch(err=>console.log("SW failed:",err));
+}
 </script>
 
 </body>
