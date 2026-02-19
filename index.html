@@ -4,75 +4,22 @@
 <meta charset="UTF-8">
 <title>Cash Tow Me – Driver</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
 <link rel="manifest" href="manifest.json">
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <style>
-html, body {
-  margin:0;
-  padding:0;
-  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-  background:#0f0f0f;
-  color:white;
-  height:100%;
-}
-
-header {
-  background:#2563eb;
-  color:white;
-  text-align:center;
-  padding:25px 10px;
-  font-size:22px;
-  font-weight:bold;
-  box-shadow:0 4px 8px rgba(0,0,0,0.3);
-}
-
-.container {
-  padding:15px;
-  display:flex;
-  flex-direction:column;
-  gap:15px;
-}
-
-.card {
-  background:#1c1c1e;
-  padding:20px;
-  border-radius:20px;
-}
-
-input {
-  width:100%;
-  padding:16px;
-  margin-bottom:12px;
-  border-radius:12px;
-  border:none;
-  font-size:16px;
-}
-
-button {
-  width:100%;
-  padding:16px;
-  border:none;
-  border-radius:14px;
-  font-size:16px;
-  font-weight:bold;
-  margin-bottom:10px;
-  cursor:pointer;
-}
-
+html, body {margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,sans-serif; background:#0f0f0f; color:white; height:100%;}
+header {background:#2563eb; color:white; text-align:center; padding:25px 10px; font-size:22px; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.3);}
+.container {padding:15px; display:flex; flex-direction:column; gap:15px;}
+.card {background:#1c1c1e; padding:20px; border-radius:20px;}
+input {width:100%; padding:16px; margin-bottom:12px; border-radius:12px; border:none; font-size:16px;}
+button {width:100%; padding:16px; border:none; border-radius:14px; font-size:16px; font-weight:bold; margin-bottom:10px; cursor:pointer;}
 .btn-online { background:#16a34a; color:white; }
 .btn-offline { background:#dc2626; color:white; }
 .btn-pay { background:#2563eb; color:white; }
-
-#statusText, #gpsText {
-  text-align:center;
-  margin-top:10px;
-  font-size:14px;
-  color:#ccc;
-}
+#statusText, #gpsText {text-align:center; margin-top:10px; font-size:14px; color:#ccc;}
 </style>
 </head>
 <body>
@@ -81,7 +28,7 @@ button {
 
 <div class="container">
 
-  <!-- Profile Card -->
+  <!-- Profile -->
   <div class="card">
     <input id="name" placeholder="Driver Name">
     <input id="company" placeholder="Company Name">
@@ -89,12 +36,11 @@ button {
     <input id="city" placeholder="City">
     <input id="services" placeholder="Services (Flatbed, Winch)">
     <button onclick="saveDriver()">Save Profile</button>
-
     <button class="btn-pay" onclick="paySubscription('daily')">💳 Pay Daily</button>
     <button class="btn-pay" onclick="paySubscription('monthly')">💳 Pay Monthly</button>
   </div>
 
-  <!-- Online/Offline Toggle -->
+  <!-- Online/Offline -->
   <div class="card">
     <button id="toggleBtn" class="btn-online" onclick="toggleStatus()">Go Online</button>
     <p id="statusText">Status: OFFLINE</p>
@@ -112,7 +58,6 @@ const firebaseConfig = {
   messagingSenderId: "79166345159",
   appId: "1:79166345159:web:c763c3d806d2fc24db53e2"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -126,7 +71,6 @@ function saveDriver() {
   const phone = document.getElementById("phone").value;
   const city = document.getElementById("city").value;
   const services = document.getElementById("services").value;
-
   if (!name || !phone) return alert("Name and Phone required");
 
   if (driverId) {
@@ -147,17 +91,15 @@ function saveDriver() {
 }
 
 function paySubscription(type) {
-  let url = type === "daily" ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
+  const url = type === "daily" ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
   window.open(url, "_blank");
 }
 
 function toggleStatus() {
   if (!driverId) return alert("Save profile first");
-
   db.collection("drivers").doc(driverId).get().then(doc => {
     const data = doc.data();
     if (!data.paid || !data.approved) return alert("Must be approved and pay before going online");
-
     if (status === "OFF") {
       status = "ON";
       document.getElementById("toggleBtn").innerText = "Go Offline";
@@ -171,7 +113,6 @@ function toggleStatus() {
       document.getElementById("statusText").innerText = "Status: OFFLINE";
       stopGPS();
     }
-
     db.collection("drivers").doc(driverId).update({status});
   });
 }
@@ -192,7 +133,12 @@ function stopGPS() {
   document.getElementById("gpsText").innerText = "GPS: Not Active";
 }
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js');
+// Register service worker
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/service-worker.js")
+    .then(() => console.log("Service Worker registered"))
+    .catch((err) => console.error("Service Worker failed:", err));
+}
 </script>
 
 </body>
