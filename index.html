@@ -167,31 +167,59 @@ function setRole(r) {
 
 // Save driver profile
 function saveDriver() {
-  const name = document.getElementById("name").value;
-  const company = document.getElementById("company").value;
-  const phone = document.getElementById("phone").value;
-  const city = document.getElementById("city").value;
-  const services = document.getElementById("services").value;
+  const name = document.getElementById("name").value.trim();
+  const company = document.getElementById("company").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const city = document.getElementById("city").value.trim();
+  const services = document.getElementById("services").value.trim();
 
-  if(!name || !phone) return alert("Name and Phone required");
+  if(!name || !phone) {
+    return alert("Driver Name and Phone are required.");
+  }
 
-  if(driverId){
-    db.collection("drivers").doc(driverId).update({name, company, phone, city, services});
-    alert("Profile updated");
+  if(driverId) {
+    // Update existing driver
+    db.collection("drivers").doc(driverId).update({
+      name,
+      company,
+      phone,
+      city,
+      services
+    })
+    .then(() => {
+      alert("Profile updated successfully!");
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error updating profile: " + err.message);
+    });
+
   } else {
+    // Add new driver
     db.collection("drivers").add({
-      name, company, phone, city, services,
-      approved:false, paid:false, status:"OFF",
-      latitude:null, longitude:null,
-      createdAt:firebase.firestore.FieldValue.serverTimestamp()
-    }).then(doc=>{
-      driverId = doc.id;
+      name,
+      company,
+      phone,
+      city,
+      services,
+      approved: false,
+      paid: false,
+      status: "OFF",
+      latitude: null,
+      longitude: null,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    })
+    .then(docRef => {
+      driverId = docRef.id;
       localStorage.setItem("driverId", driverId);
       alert("Profile saved. Await admin approval & payment.");
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error saving profile: " + err.message);
     });
   }
 }
-
 // Stripe payments
 function paySubscription(type){
   let url = type==='daily' ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
