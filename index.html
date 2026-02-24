@@ -15,7 +15,7 @@
 <!-- Firebase config -->
 <script>
   const firebaseConfig = {
-    apiKey: "YOUR_REAL_API_KEY",  // <-- replace with your API key
+    apiKey: "YOUR_REAL_API_KEY",  // <-- replace with your Firebase API key
     authDomain: "cash-dispatch.firebaseapp.com",
     projectId: "cash-dispatch",
     storageBucket: "cash-dispatch.appspot.com",
@@ -98,11 +98,15 @@ let driverId = localStorage.getItem("driverId");
 let status = "OFF";
 let watchId = null;
 
+// Role selection
 function setRole(r){
   role = r;
   document.getElementById("roleSelect").style.display="none";
-  if(r==="driver") document.getElementById("driverSection").style.display="block";
-  if(r==="customer") document.getElementById("customerSection").style.display="block";
+  document.getElementById("driverSection").style.display = "none";
+  document.getElementById("customerSection").style.display = "none";
+
+  if(r === "driver") document.getElementById("driverSection").style.display = "block";
+  if(r === "customer") document.getElementById("customerSection").style.display = "block";
 }
 
 // Save driver profile
@@ -135,7 +139,7 @@ function saveDriver(){
   }
 }
 
-// Subscription buttons
+// Subscription
 function paySubscription(type){
   let url = type==='daily' ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
   window.open(url,"_blank");
@@ -188,7 +192,6 @@ function loadDrivers(){
   const results = document.getElementById("results");
   results.innerHTML="Loading...";
 
-  // Firestore query with .get().then()
   db.collection("drivers")
     .where("approved","==",true)
     .where("status","==","ON")
@@ -219,7 +222,7 @@ function loadDrivers(){
     });
 }
 
-// Service Worker for PWA
+// Service Worker
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/service-worker.js')
     .then(()=>console.log("Service Worker registered"))
