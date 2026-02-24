@@ -15,7 +15,7 @@
 <!-- Firebase config -->
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyCQyOdOaBj7C65MdvVA-_at7VbsvOqLqIw",
+    apiKey: "YOUR_REAL_API_KEY",  // <-- replace with your API key
     authDomain: "cash-dispatch.firebaseapp.com",
     projectId: "cash-dispatch",
     storageBucket: "cash-dispatch.appspot.com",
@@ -98,7 +98,6 @@ let driverId = localStorage.getItem("driverId");
 let status = "OFF";
 let watchId = null;
 
-// Role selection
 function setRole(r){
   role = r;
   document.getElementById("roleSelect").style.display="none";
@@ -136,7 +135,7 @@ function saveDriver(){
   }
 }
 
-// Subscription simulation
+// Subscription buttons
 function paySubscription(type){
   let url = type==='daily' ? "https://buy.stripe.com/test_daily_link" : "https://buy.stripe.com/test_monthly_link";
   window.open(url,"_blank");
@@ -189,31 +188,38 @@ function loadDrivers(){
   const results = document.getElementById("results");
   results.innerHTML="Loading...";
 
+  // Firestore query with .get().then()
   db.collection("drivers")
     .where("approved","==",true)
     .where("status","==","ON")
     .where("city","==",city)
     .get()
-    .then(snapshot=>{
-      results.innerHTML="";
-      if(snapshot.empty){ results.innerHTML="No drivers available"; return; }
-
-      snapshot.forEach(doc=>{
-        const d = doc.data();
-        const div=document.createElement("div");
-        div.className="driver-card";
-        div.innerHTML=`
-          <strong>${d.company||d.name}</strong><br>
-          🚛 ${d.services}<br>
-          📍 ${d.city}<br>
-          <a class="call-btn" href="tel:${d.phone}">📞 Call Driver</a>
-        `;
-        results.appendChild(div);
-      });
+    .then(snapshot => {
+        results.innerHTML = "";
+        if(snapshot.empty){
+            results.innerHTML="No drivers available";
+            return;
+        }
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            const div = document.createElement("div");
+            div.className="driver-card";
+            div.innerHTML = `
+                <strong>${d.company || d.name}</strong><br>
+                🚛 ${d.services}<br>
+                📍 ${d.city}<br>
+                <a class="call-btn" href="tel:${d.phone}">📞 Call Driver</a>
+            `;
+            results.appendChild(div);
+        });
+    })
+    .catch(error => {
+        console.error("Error fetching drivers: ", error);
+        results.innerHTML = "Error loading drivers";
     });
 }
 
-// Register Service Worker for offline support
+// Service Worker for PWA
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/service-worker.js')
     .then(()=>console.log("Service Worker registered"))
