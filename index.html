@@ -102,61 +102,35 @@
     <button class="btn-role" onclick="setRole('customer')">I am a Motorist</button>
   </div>
 
- // Save driver profile
-function saveDriver() {
-  const name = document.getElementById("name").value.trim();
-  const company = document.getElementById("company").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const city = document.getElementById("city").value.trim();
-  const services = document.getElementById("services").value.trim();
+<!-- Driver Section -->
+<div class="card" id="driverSection" style="display:none;">
+  <h3>Driver Dashboard</h3>
 
-  if(!name || !phone) {
-    return alert("Driver Name and Phone are required.");
-  }
+  <input id="name" placeholder="Driver Name">
+  <input id="company" placeholder="Company Name">
+  <input id="phone" placeholder="Phone Number">
+  <input id="city" placeholder="City">
+  <input id="services" placeholder="Services (Tow, Jump, Lockout)">
 
-  if(driverId) {
-    // Update existing driver
-    db.collection("drivers").doc(driverId).update({
-      name,
-      company,
-      phone,
-      city,
-      services
-    })
-    .then(() => {
-      alert("Profile updated successfully!");
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Error updating profile: " + err.message);
-    });
+  <button onclick="saveDriver()">Save Profile</button>
 
-  } else {
-    // Add new driver
-    db.collection("drivers").add({
-      name,
-      company,
-      phone,
-      city,
-      services,
-      approved: false,
-      paid: false,
-      status: "OFF",
-      latitude: null,
-      longitude: null,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    })
-    .then(docRef => {
-      driverId = docRef.id;
-      localStorage.setItem("driverId", driverId);
-      alert("Profile saved. Await admin approval & payment.");
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Error saving profile: " + err.message);
-    });
-  }
-}
+  <button id="toggleBtn" class="btn-online" onclick="toggleStatus()">
+    Go Online
+  </button>
+
+  <p id="statusText">Status: OFFLINE</p>
+  <p id="gpsText">GPS: Not Active</p>
+
+  <hr>
+
+  <h4>Subscription</h4>
+  <button class="btn-pay" onclick="paySubscription('daily')">
+    Pay Daily
+  </button>
+  <button class="btn-pay" onclick="paySubscription('monthly')">
+    Pay Monthly
+  </button>
+</div>
 
   <!-- Customer Section -->
   <div class="card" id="customerSection" style="display:none;">
