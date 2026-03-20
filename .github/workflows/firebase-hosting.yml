@@ -5,6 +5,13 @@ on:
     branches:
       - main
 
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -13,9 +20,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install and Build
-        # Replace 'YOUR_FOLDER_NAME' with the name of your subfolder (e.g., frontend)
+      
         run: |
-          cd YOUR_FOLDER_NAME
+          cd NAME_OF_YOUR_SUBFOLDER
           npm install
           npm run build
         
@@ -24,5 +31,5 @@ jobs:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: YOUR_FIREBASE_PROJECT_ID  # Replace with your actual project ID
+          projectId: cash-dispatch 
           channelId: live
