@@ -8,14 +8,14 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-steps:
+    steps:
       - name: Checkout Code
-        uses: actions/checkout@v4  # This fixes the '3' vs '4' warning
+        uses: actions/checkout@v4
 
       - name: Install and Build
-        # This 'run' command tells the robot to enter your folder first
+        # Replace 'YOUR_FOLDER_NAME' with the name of your subfolder (e.g., frontend)
         run: |
-          cd YOUR_FOLDER_NAME 
+          cd YOUR_FOLDER_NAME
           npm install
           npm run build
         
@@ -24,5 +24,5 @@ steps:
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
-          projectId: your-project-id
+          projectId: YOUR_FIREBASE_PROJECT_ID  # Replace with your actual project ID
           channelId: live
