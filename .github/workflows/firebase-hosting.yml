@@ -13,9 +13,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install and Build
-        # This tells GitHub to go INTO the folder where your package.json is
+        # Changed 'cash-dispatch' to 'cashtowme-png'
         run: |
-          cd cash-dispatch
+          cd cashtowme-png
           npm install
           npm run build
         
