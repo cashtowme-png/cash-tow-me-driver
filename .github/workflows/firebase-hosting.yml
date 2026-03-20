@@ -8,12 +8,22 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+   name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Install and Build
-        # I changed 'NAME_OF_YOUR_SUBFOLDER' to 'cash-dispatch' below
+        # This 'run' command enters your folder first
         run: |
           cd cash-dispatch
           npm install
@@ -23,6 +33,7 @@ jobs:
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
+          # I plugged in your exact secret name below:
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CASH_DISPATCH }}'
           projectId: cash-dispatch
           channelId: live
