@@ -13,9 +13,8 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install and Build
-     
+        # No 'cd' command here because your files are in the root!
         run: |
-          cd cashtowme-png
           npm install
           npm run build
         
