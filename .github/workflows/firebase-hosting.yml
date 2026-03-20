@@ -8,19 +8,19 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-
     steps:
-  - uses: actions/checkout@v4  # Changed from v3 to v4
-  
-  - name: Install Dependencies
-    run: npm install          # Or 'npm ci' for a cleaner install
-    
-  - name: Build App
-    run: npm run build        # This creates your 'dist' or 'build' folder
-    
-  - uses: FirebaseExtended/action-hosting-deploy@v0
-    with:
-      repoToken: '${{ secrets.GITHUB_TOKEN }}'
-      firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_YOUR_APP }}'
-      channelId: live
-      projectId: your-project-id
+      - uses: actions/checkout@v4  # Use v4 here
+
+      - name: Install and Build
+        run: |
+          npm install
+          npm run build
+        # IMPORTANT: If your package.json is in a folder, uncomment the next line:
+        # working-directory: ./your-folder-name 
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_YOUR_PROJECT }}'
+          channelId: live
+          projectId: your-project-id
