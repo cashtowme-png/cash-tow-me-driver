@@ -19,5 +19,5 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_CASH_DISPATCH }}'
           projectId: cash-dispatch
-          # THIS LINE BELOW STOPS THE NPX ERROR:
+          # This is the "magic" line for private/simple repos:
           runBuild: false
