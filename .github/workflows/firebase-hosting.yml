@@ -10,13 +10,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Deploy to Firebase
-        run: firebase deploy --token "${{ secrets.FIREBASE_TOKEN }}"
+  - uses: actions/checkout@v4  # Changed from v3 to v4
+  
+  - name: Install Dependencies
+    run: npm install          # Or 'npm ci' for a cleaner install
+    
+  - name: Build App
+    run: npm run build        # This creates your 'dist' or 'build' folder
+    
+  - uses: FirebaseExtended/action-hosting-deploy@v0
+    with:
+      repoToken: '${{ secrets.GITHUB_TOKEN }}'
+      firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_YOUR_APP }}'
+      channelId: live
+      projectId: your-project-id
